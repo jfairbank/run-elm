@@ -1,5 +1,7 @@
 # run-elm
 
+[![npm](https://img.shields.io/npm/v/run-elm.svg?style=flat-square)](https://www.npmjs.com/package/run-elm)
+
 ##### Run Elm code from the command line
 
 Ever want to quickly try out some Elm code that's too complex for the REPL or
@@ -9,7 +11,9 @@ can run from the command line!
 
 ## Prerequisites
 
-run-elm expects a current version of the Elm binary installed globally. You can
+run-elm requires Node versions >= 4.
+
+run-elm also expects a current version of the Elm binary installed globally. You can
 install it with:
 
 ```sh
