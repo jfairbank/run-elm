@@ -1,0 +1,25 @@
+port module RunElmMain exposing (..)
+
+import Platform exposing (program)
+import {module} exposing (output)
+
+
+type alias Pgm =
+    Program Never () ()
+
+
+port sendOutput : String -> Cmd msg
+
+
+nodeProgram : String -> Pgm
+nodeProgram message =
+    program
+        { init = ( (), sendOutput message )
+        , update = \() -> \() -> ( (), Cmd.none )
+        , subscriptions = \() -> Sub.none
+        }
+
+
+main : Pgm
+main =
+    nodeProgram output

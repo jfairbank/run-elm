@@ -1,0 +1,44 @@
+{
+  "name": "run-elm",
+  "version": "1.0.0",
+  "description": "Run Elm code from the command line",
+  "files": [
+    "lib"
+  ],
+  "bin": {
+    "run-elm": "lib/index.js"
+  },
+  "scripts": {
+    "build": "babel index.js --out-dir lib",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfairbank/run-elm.git"
+  },
+  "keywords": [
+    "elm",
+    "command",
+    "command line",
+    "run",
+    "evaluate"
+  ],
+  "author": "Jeremy Fairbank <elpapapollo@gmail.com> (http://jeremyfairbank.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfairbank/run-elm/issues"
+  },
+  "homepage": "https://github.com/jfairbank/run-elm#readme",
+  "dependencies": {
+    "node-elm-compiler": "^4.3.0",
+    "shelljs": "^0.7.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-preset-es2015": "^6.22.0",
+    "eslint": "^3.14.1",
+    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-plugin-import": "^2.2.0"
+  }
+}
