@@ -4,3 +4,4 @@ elm-stuff/
 repl-temp-*
 lib/index.js
 node_modules/
+tests/**/elm-package.json
