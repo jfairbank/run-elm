@@ -13,6 +13,8 @@
     "run-elm": "lib/index.js"
   },
   "scripts": {
+    "pretest": "npm run build",
+    "test": "node tests/run-tests.js",
     "build": "babel index.js --out-dir lib",
     "prepublish": "npm run build"
   },
