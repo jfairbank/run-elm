@@ -50,6 +50,7 @@ import sh from 'shelljs';
   const mainModuleFilename = path.join(projectDir, `${mainModule}.elm`);
   const outputCompiledFilename = path.join(projectDir, `run-elm-main-${timestamp}.js`);
 
+  let exitCode = 0;
   try {
     // ensure elm is installed
     if (!sh.which('elm')) {
@@ -147,12 +148,13 @@ import sh from 'shelljs';
     if (err.stack && process.env.DEBUG) {
       console.error(err.stack.substring(err.toString().length + 1));
     }
-    process.exit(1);
+    exitCode = 1;
   } finally {
     // cleanup
-    Promise.all([
+    await Promise.all([
       unlink(mainModuleFilename).catch(() => {}),
       unlink(outputCompiledFilename).catch(() => {})
     ]);
   }
+  process.exit(exitCode);
 })();
