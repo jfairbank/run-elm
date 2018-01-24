@@ -54,9 +54,7 @@ import sh from 'shelljs';
 
     // ensure --output-var is specified adequately
     if (!outputVarName.match(/^[a-z_]\w*$/)) {
-      throw new Error(
-        `Provided --output-var \`${outputVarName}\` is not a valid variable name in elm.`
-      );
+      throw new Error(`Provided --output-var \`${outputVarName}\` is not a valid variable name in elm.`);
     }
 
     // ensure user moule path is adequate
@@ -82,9 +80,7 @@ import sh from 'shelljs';
       throw new Error(`Provided --project-dir '${rawProjectDir}' is not a directory`);
     }
     if (userModulePath.indexOf(`${projectDir}/`) !== 0) {
-      throw new Error(
-        `File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``
-      );
+      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
     }
 
     // read RunElmMain template
