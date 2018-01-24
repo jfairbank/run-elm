@@ -12,11 +12,11 @@ import sh from 'shelljs';
     // eslint-disable-next-line import/no-unresolved
     .version(require(path.resolve(__dirname, '../package.json')).version)
     .usage('[options] <file> [arg1 arg2 ...]')
-    .description('Runs a given elm module and prints variable `output : String` to stdout.'
+    .description('Runs a given elm module and prints `output : String` to stdout.'
       + ' If `output` is of type `List String -> String`, you can speficy additional command arguments and they will be passed down to elm as `List String`.')
     .option(
-      '--output-var [name]',
-      'name of the elm variable to output (should be of type String or List String -> String)',
+      '--output-name [name]',
+      'name of the elm constant on function to output (should be of type String or List String -> String)',
       'output'
     )
     .option(
@@ -33,7 +33,7 @@ import sh from 'shelljs';
 
   // read args and options
   const rawUserModuleFileName = program.args[0];
-  const outputVarName = program.outputVar;
+  const outputName = program.outputName;
   const rawProjectDir = program.projectDir;
   const argsToOutput = program.args.slice(1);
 
@@ -56,9 +56,9 @@ import sh from 'shelljs';
       throw new Error('No elm global binary available. Please install with `npm install -g elm`.');
     }
 
-    // ensure --output-var is specified adequately
-    if (!outputVarName.match(/^[a-z_]\w*$/)) {
-      throw new Error(`Provided --output-var \`${outputVarName}\` is not a valid variable name in elm.`);
+    // ensure --output-name is specified adequately
+    if (!outputName.match(/^[a-z_]\w*$/)) {
+      throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
 
     // ensure user moule path is adequate
@@ -113,7 +113,7 @@ import sh from 'shelljs';
     const mainModuleContents = template
       .replace('{mainModule}', mainModule)
       .replace('{userModule}', userModule)
-      .replace('{output}', outputVarName);
+      .replace('{output}', outputName);
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
@@ -133,8 +133,8 @@ import sh from 'shelljs';
     // handle error
     let message;
     if (typeof err === 'object' && 'message' in err) {
-      if (err.message.indexOf(`does not expose \`${outputVarName}\``) !== -1) {
-        message = `Elm file \`${userModulePath}\` does not define variable \`${outputVarName}\``;
+      if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
+        message = `Elm file \`${userModulePath}\` does not define \`${outputName}\``;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
         message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${projectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
       } else {
