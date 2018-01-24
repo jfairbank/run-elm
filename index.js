@@ -12,16 +12,16 @@ import sh from 'shelljs';
     // eslint-disable-next-line import/no-unresolved
     .version(require(path.resolve(__dirname, '../package.json')).version)
     .usage('[options] <file> [arg1 arg2 ...]')
-    .description('Runs a given elm module and prints `output : String` to stdout.'
-      + ' If `output` is of type `List String -> String`, you can speficy additional command arguments and they will be passed down to elm as `List String`.')
+    .description('Runs an Elm file and prints the result of `output` to stdout.'
+      + ' `output` can be a constant of type `String` or a function that accepts `List String` and returns `String`. You can supply command line arguments to the Elm file if `output` accepts `List String`.')
     .option(
       '--output-name [name]',
-      'name of the elm constant on function to output (should be of type String or List String -> String)',
-      'output'
+      'constant or function name for printing results',
+      'output',
     )
     .option(
       '--project-dir [path]',
-      'specific directory in which to search for elm-package.json or to create it (if different from file location)'
+      'specific directory to search for elm-package.json or to create it (if different from Elm file location)'
     )
     .parse(process.argv);
 
@@ -61,8 +61,11 @@ import sh from 'shelljs';
     if (!outputName.match(/^[a-z_]\w*$/)) {
       throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
+    if (['init', 'main', 'program', 'sendOutput'].indexOf(outputName) !== -1) {
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variablue you would like to output.`);
+    }
 
-    // ensure user moule path is adequate
+    // ensure user module path is adequate
     try {
       const userModuleFileStats = await stat(userModulePath);
       if (!userModuleFileStats.isFile()) {
@@ -95,13 +98,13 @@ import sh from 'shelljs';
     } catch (err) {
       throw new Error(`File '${userModulePath}' could not be read`);
     }
-    const argsRegex = /^output *\w+ *=/;
+    const argsRegex = /^output +\w+ *=/;
     const needArgs = userModuleContents
       .split('\n')
       .some(line => argsRegex.test(line.trim()));
 
     // read main module template
-    await sh.cd(projectDir);
+    sh.cd(projectDir);
     let template;
     const chosenTemplatePath = needArgs ? templateWithArgsPath : templatePath;
     try {
