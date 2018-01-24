@@ -11,7 +11,7 @@ can run from the command line!
 
 ## Prerequisites
 
-run-elm requires Node versions >= 4.
+run-elm requires Node versions >= 8.
 
 run-elm also expects a current version of the Elm binary installed globally. You can
 install it with:
@@ -43,15 +43,34 @@ output =
 
 Finally, run the code:
 
-```sh
+```bash
 $ run-elm Hello.elm
 Hello World!
 ```
 
 You should see your message printed to the console.
 
-## Limitations
+## Command Line Arguments
 
-run-elm doesn't allow you to pass in any arguments, but that could be a useful
-future feature. Therefore, run-elm is mainly useful for just prototyping or
-testing out types and functions that are too cumbersome to type in the REPL.
+run-elm also supports command line arguments to `output` as a list of strings.
+
+```elm
+module Main exposing (output)
+
+
+output : List String -> String
+output args =
+    String.join "-" args ++ "!"
+```
+
+Running this:
+
+```bash
+run-elm Main.elm hello world
+```
+
+Results in this:
+
+```
+hello-world!
+```
