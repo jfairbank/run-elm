@@ -1,7 +1,7 @@
-port module RunElmMain exposing (..)
+port module {mainModule} exposing (..)
 
 import Platform exposing (program)
-import {module} exposing (output)
+import {userModule} exposing ({output})
 
 
 type alias Pgm =

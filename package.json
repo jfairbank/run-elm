@@ -37,6 +37,8 @@
   "homepage": "https://github.com/jfairbank/run-elm#readme",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
+    "commander": "^2.13.0",
+    "fs-extra": "^5.0.0",
     "node-elm-compiler": "^4.3.0",
     "shelljs": "^0.7.6"
   },
