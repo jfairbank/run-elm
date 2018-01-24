@@ -4,10 +4,11 @@ import fs from 'fs';
 import path from 'path';
 import { compileToString } from 'node-elm-compiler';
 import sh from 'shelljs';
+import util from 'util';
 
-const filename = (process.argv[2] || '').trim();
+const elmFilename = (process.argv[2] || '').trim();
 
-if (!filename || filename === '-h' || filename === '--help') {
+if (!elmFilename || elmFilename === '-h' || elmFilename === '--help') {
   console.log('Usage: run-elm [FILENAME]');
   process.exit(1);
 }
@@ -17,42 +18,30 @@ if (!sh.which('elm')) {
   process.exit(1);
 }
 
-function promisify(fn) {
-  return (...args) => new Promise((resolve, reject) => {
-    fn(...args, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
-}
-
-const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
-const unlink = promisify(fs.unlink);
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const unlink = util.promisify(fs.unlink);
 
 const runModuleName = 'RunElmMain';
 const templatePath = path.resolve(__dirname, `${runModuleName}.elm.template`);
 const templateWithArgsPath = path.resolve(__dirname, `${runModuleName}Args.elm.template`);
 
-const moduleName = path.basename(filename, '.elm');
-const outputDir = path.resolve(path.dirname(filename));
+const moduleName = path.basename(elmFilename, '.elm');
+const outputDir = path.resolve(path.dirname(elmFilename));
 const outputElmFilename = path.join(outputDir, `${runModuleName}.elm`);
 const outputCompiledFilename = path.join(outputDir, 'run-elm-main.js');
 
-function cleanup() {
-  return Promise.all([
-    unlink(outputElmFilename).catch(() => {}),
-    unlink(outputCompiledFilename).catch(() => {}),
-  ]);
+function getElmFileContents() {
+  return readFile(elmFilename, 'utf-8')
+    .catch(
+      () => Promise.reject(`Elm file '${elmFilename}' does not exist`)
+    );
 }
 
-function determineNeedArgs(contents) {
+function determineNeedArgs(elmFileContents) {
   const argsRegex = /^output *\w+ *=/;
 
-  return contents
+  return elmFileContents
     .split('\n')
     .some(line => argsRegex.test(line.trim()));
 }
@@ -62,30 +51,29 @@ function getTemplate(needArgs) {
     ? templateWithArgsPath
     : templatePath;
 
-  return readFile(templateFile, 'utf-8')
-    .then(template => ({ template, needArgs }));
+  return readFile(templateFile, 'utf-8');
 }
 
-function createElmFile(config) {
-  const contents = config.template.replace('{module}', moduleName);
-  return writeFile(outputElmFilename, contents, 'utf-8')
-    .then(() => config);
+function createElmFile(template) {
+  const contents = template.replace('{module}', moduleName);
+
+  return writeFile(outputElmFilename, contents, 'utf-8');
 }
 
-function compileElmFile(config) {
+async function compileElmFile() {
   sh.cd(outputDir);
 
-  return compileToString([outputElmFilename], { yes: true })
-    .then(contents => writeFile(outputCompiledFilename, contents))
-    .then(() => config);
+  const contents = await compileToString([outputElmFilename], { yes: true });
+
+  return writeFile(outputCompiledFilename, contents);
 }
 
-function runElmFile(config) {
+function runElmFile(needArgs) {
   return new Promise((resolve) => {
     const { worker } = require(outputCompiledFilename)[runModuleName];
     let app;
 
-    if (config.needArgs) {
+    if (needArgs) {
       const args = process.argv.slice(3);
       app = worker(args);
     } else {
@@ -99,12 +87,19 @@ function runElmFile(config) {
   });
 }
 
+function cleanup() {
+  return Promise.all([
+    unlink(outputElmFilename).catch(() => {}),
+    unlink(outputCompiledFilename).catch(() => {}),
+  ]);
+}
+
 function handleError(err) {
   let message;
 
   if (typeof err === 'object' && 'message' in err) {
     if (/does not expose `output`/.test(err.message)) {
-      message = `Elm module \`${moduleName}\` does not define a String \`output\` variable.`;
+      message = `Elm module \`${moduleName}\` does not define a String \`output\`.`;
     } else {
       message = err.message;
     }
@@ -115,19 +110,21 @@ function handleError(err) {
   console.error('Error:', message);
 }
 
-readFile(filename, 'utf-8')
-  .then(
-    determineNeedArgs,
-    () => Promise.reject(`Elm file '${filename}' does not exist`)
-  )
-  .then(getTemplate)
-  .then(createElmFile)
-  .then(compileElmFile)
-  .then(runElmFile)
-  .then(cleanup)
-  .catch((err) => {
-    cleanup().then(() => {
-      handleError(err);
-      process.exit(1);
-    });
-  });
+async function main() {
+  try {
+    const elmFileContents = await getElmFileContents();
+    const needArgs = determineNeedArgs(elmFileContents);
+    const template = await getTemplate(needArgs);
+
+    await createElmFile(template);
+    await compileElmFile();
+    await runElmFile(needArgs);
+    await cleanup();
+  } catch (e) {
+    await cleanup();
+    handleError(e);
+    process.exit(1);
+  }
+}
+
+main();
