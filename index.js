@@ -8,13 +8,15 @@ import sh from 'shelljs';
 
 (async () => {
   program
-    // package is one level up because the compiled js file is in lib/
+    // package.json is one level up because the compiled js file is in lib/
     // eslint-disable-next-line import/no-unresolved
     .version(require(path.resolve(__dirname, '../package.json')).version)
-    .usage('[options] <file>')
+    .usage('[options] <file> [arg1 arg2 ...]')
+    .description('Runs a given elm module and prints variable `output : String` to stdout.'
+      + ' If `output` is of type `List String -> String`, you can speficy additional command arguments and they will be passed down to elm as `List String`.')
     .option(
       '--output-var [name]',
-      'name of the elm variable to output (should be of type String)',
+      'name of the elm variable to output (should be of type String or List String -> String)',
       'output'
     )
     .option(
@@ -23,8 +25,8 @@ import sh from 'shelljs';
     )
     .parse(process.argv);
 
-  // run-elm expect exactly one argument, so exit otherwise
-  if (program.args.length !== 1) {
+  // run-elm expects one or more arguments, so exit if no arguments given
+  if (program.args.length === 0) {
     console.log(program.help());
     process.exit(1);
   }
@@ -33,11 +35,13 @@ import sh from 'shelljs';
   const rawUserModuleFileName = program.args[0];
   const outputVarName = program.outputVar;
   const rawProjectDir = program.projectDir;
+  const argsToOutput = program.args.slice(1);
 
   // extract key paths
   const timestamp = +new Date();
   const mainModule = `RunElmMain${timestamp}`;
   const templatePath = path.resolve(__dirname, 'RunElmMain.elm.template');
+  const templateWithArgsPath = path.resolve(__dirname, 'RunElmMainWithArgs.elm.template');
   const userModulePath = path.resolve(rawUserModuleFileName);
   const userModule = path.basename(userModulePath, '.elm');
   const projectDir = rawProjectDir
@@ -83,16 +87,29 @@ import sh from 'shelljs';
       throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
     }
 
-    // read RunElmMain template
+    // read user module and determine what template to use
+    let userModuleContents;
+    try {
+      userModuleContents = await readFile(userModulePath, 'utf-8');
+    } catch (err) {
+      throw new Error(`File '${userModulePath}' could not be read`);
+    }
+    const argsRegex = /^output *\w+ *=/;
+    const needArgs = userModuleContents
+      .split('\n')
+      .some(line => argsRegex.test(line.trim()));
+
+    // read main module template
     await sh.cd(projectDir);
     let template;
+    const chosenTemplatePath = needArgs ? templateWithArgsPath : templatePath;
     try {
-      template = await readFile(templatePath, 'utf-8');
+      template = await readFile(chosenTemplatePath, 'utf-8');
     } catch (err) {
-      throw new Error(`Elm file '${templatePath}' does not exist`);
+      throw new Error(`Elm file '${chosenTemplatePath}' does not exist`);
     }
 
-    // create RunELmMain file from template
+    // create main module file from template
     const mainModuleContents = template
       .replace('{mainModule}', mainModule)
       .replace('{userModule}', userModule)
@@ -106,7 +123,8 @@ import sh from 'shelljs';
     // run compiled elm file
     await new Promise((resolve) => {
       const { worker } = require(outputCompiledFilename)[mainModule];
-      worker().ports.sendOutput.subscribe((output) => {
+      const app = needArgs ? worker(argsToOutput) : worker();
+      app.ports.sendOutput.subscribe((output) => {
         console.log(output);
         resolve();
       });
@@ -116,7 +134,7 @@ import sh from 'shelljs';
     let message;
     if (typeof err === 'object' && 'message' in err) {
       if (err.message.indexOf(`does not expose \`${outputVarName}\``) !== -1) {
-        message = `Elm file \`${userModulePath}\` does not define a String \`${outputVarName}\` variable`;
+        message = `Elm file \`${userModulePath}\` does not define variable \`${outputVarName}\``;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
         message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${projectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
       } else {
