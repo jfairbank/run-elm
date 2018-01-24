@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import 'babel-polyfill';
 import program from 'commander';
 import { stat, readFile, writeFile, unlink } from 'fs-extra';
 import { compileToString } from 'node-elm-compiler';

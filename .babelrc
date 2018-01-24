@@ -1,6 +1,9 @@
 {
   "presets": [
-    ["es2015", { "loose": true }]
-  ],
-  "plugins": ["syntax-async-functions","transform-regenerator"]
+    ["babel-preset-env", {
+      "targets": {
+        "node": "6.0"
+      }
+    }]
+  ]
 }
