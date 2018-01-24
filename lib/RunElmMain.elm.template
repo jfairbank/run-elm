@@ -1,25 +1,22 @@
 port module {mainModule} exposing (..)
 
+import Json.Decode
 import Platform exposing (program)
 import {userModule} exposing ({output})
-
-
-type alias Pgm =
-    Program Never () ()
 
 
 port sendOutput : String -> Cmd msg
 
 
-nodeProgram : String -> Pgm
-nodeProgram message =
-    program
-        { init = ( (), sendOutput message )
-        , update = \() -> \() -> ( (), Cmd.none )
-        , subscriptions = \() -> Sub.none
-        }
+init : ( (), Cmd msg )
+init =
+    ( (), sendOutput output )
 
 
-main : Pgm
+main : Program Never () msg
 main =
-    nodeProgram output
+    Platform.program
+        { init = init
+        , update = \_ model -> ( model, Cmd.none )
+        , subscriptions = \_ -> Sub.none
+        }
