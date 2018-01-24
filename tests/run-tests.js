@@ -1,4 +1,4 @@
-const execSync = require('child_process').execSync;
+const spawnSync = require('child_process').spawnSync;
 const fs = require('fs');
 const path = require('path');
 const inspect = require('util').inspect;
@@ -18,11 +18,19 @@ const testDirs = fs
   .filter(test => fs.statSync(test.path).isDirectory());
 
 const results = testDirs.map((test) => {
+  const argsPath = path.join(test.path, 'args.json');
+
+  const args = fs.existsSync(argsPath)
+    ? require(argsPath)
+    : [];
+
   const mainFile = path.join(test.path, 'Main.elm');
   const expectedOutput = fs.readFileSync(path.join(test.path, 'output.txt'));
+
   let actualOutput;
+
   try {
-    actualOutput = execSync(`${runElmPath} ${mainFile}`);
+    actualOutput = spawnSync(runElmPath, [mainFile, ...args]).stdout;
   } catch (err) {
     return {
       pass: false,
@@ -31,6 +39,7 @@ const results = testDirs.map((test) => {
 `,
     };
   }
+
   if (actualOutput.toString() !== expectedOutput.toString()) {
     return {
       pass: false,
@@ -40,6 +49,7 @@ const results = testDirs.map((test) => {
 `,
     };
   }
+
   return { pass: true };
 });
 

@@ -29,13 +29,13 @@ function promisify(fn) {
   });
 }
 
-const stat = promisify(fs.stat);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
 
 const runModuleName = 'RunElmMain';
 const templatePath = path.resolve(__dirname, `${runModuleName}.elm.template`);
+const templateWithArgsPath = path.resolve(__dirname, `${runModuleName}Args.elm.template`);
 
 const moduleName = path.basename(filename, '.elm');
 const outputDir = path.resolve(path.dirname(filename));
@@ -49,27 +49,50 @@ function cleanup() {
   ]);
 }
 
-function getTemplate() {
-  return readFile(templatePath, 'utf-8');
+function determineNeedArgs(contents) {
+  const argsRegex = /^output *\w+ *=/;
+
+  return contents
+    .split('\n')
+    .some(line => argsRegex.test(line.trim()));
 }
 
-function createElmFile(template) {
-  const contents = template.replace('{module}', moduleName);
-  return writeFile(outputElmFilename, contents, 'utf-8');
+function getTemplate(needArgs) {
+  const templateFile = needArgs
+    ? templateWithArgsPath
+    : templatePath;
+
+  return readFile(templateFile, 'utf-8')
+    .then(template => ({ template, needArgs }));
 }
 
-function compileElmFile() {
+function createElmFile(config) {
+  const contents = config.template.replace('{module}', moduleName);
+  return writeFile(outputElmFilename, contents, 'utf-8')
+    .then(() => config);
+}
+
+function compileElmFile(config) {
   sh.cd(outputDir);
 
   return compileToString([outputElmFilename], { yes: true })
-    .then(contents => writeFile(outputCompiledFilename, contents));
+    .then(contents => writeFile(outputCompiledFilename, contents))
+    .then(() => config);
 }
 
-function runElmFile() {
+function runElmFile(config) {
   return new Promise((resolve) => {
     const { worker } = require(outputCompiledFilename)[runModuleName];
+    let app;
 
-    worker().ports.sendOutput.subscribe((output) => {
+    if (config.needArgs) {
+      const args = process.argv.slice(3);
+      app = worker(args);
+    } else {
+      app = worker();
+    }
+
+    app.ports.sendOutput.subscribe((output) => {
       console.log(output);
       resolve();
     });
@@ -92,11 +115,12 @@ function handleError(err) {
   console.error('Error:', message);
 }
 
-stat(filename)
+readFile(filename, 'utf-8')
   .then(
-    getTemplate,
+    determineNeedArgs,
     () => Promise.reject(`Elm file '${filename}' does not exist`)
   )
+  .then(getTemplate)
   .then(createElmFile)
   .then(compileElmFile)
   .then(runElmFile)

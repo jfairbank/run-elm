@@ -5,17 +5,21 @@ import Platform exposing (program)
 import {module} exposing (output)
 
 
+type alias Args =
+    List String
+
+
 port sendOutput : String -> Cmd msg
 
 
-init : ( (), Cmd msg )
-init =
-    ( (), sendOutput output )
+init : Args -> ( (), Cmd msg )
+init args =
+    ( (), sendOutput (output args) )
 
 
-main : Program Never () msg
+main : Program Args () msg
 main =
-    Platform.program
+    Platform.programWithFlags
         { init = init
         , update = \_ model -> ( model, Cmd.none )
         , subscriptions = \_ -> Sub.none
