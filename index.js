@@ -61,7 +61,7 @@ import sh from 'shelljs';
     if (!outputName.match(/^[a-z_]\w*$/)) {
       throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
-    if (['init', 'main', 'program', 'sendOutput'].indexOf(outputName) !== -1) {
+    if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
       throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variablue you would like to output.`);
     }
 
