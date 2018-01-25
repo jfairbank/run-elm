@@ -14,7 +14,7 @@ port sendOutput : String -> Cmd msg
 
 init : Args -> ( (), Cmd msg )
 init args =
-    ( (), sendOutput (output args) )
+    ( (), sendOutput ({output} args) )
 
 
 main : Program Args () msg

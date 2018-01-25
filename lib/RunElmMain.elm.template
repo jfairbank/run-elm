@@ -10,7 +10,7 @@ port sendOutput : String -> Cmd msg
 
 init : ( (), Cmd msg )
 init =
-    ( (), sendOutput output )
+    ( (), sendOutput {output} )
 
 
 main : Program Never () msg

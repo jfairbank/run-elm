@@ -98,7 +98,7 @@ import sh from 'shelljs';
     } catch (err) {
       throw new Error(`File '${userModulePath}' could not be read`);
     }
-    const argsRegex = /^output +\w+ *=/;
+    const argsRegex = new RegExp(`^${outputName} +\\w+ *=`);
     const needArgs = userModuleContents
       .split('\n')
       .some(line => argsRegex.test(line.trim()));
@@ -117,7 +117,7 @@ import sh from 'shelljs';
     const mainModuleContents = template
       .replace('{mainModule}', mainModule)
       .replace('{userModule}', userModule)
-      .replace('{output}', outputName);
+      .replace(/\{output\}/g, outputName);
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
