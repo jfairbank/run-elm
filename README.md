@@ -80,9 +80,9 @@ hello-world!
 run-elm automatically detects whether `output` is of type `String` or `List String -> String`, so passing no extra arguments to the command will simply make `args` an empty list and will not produce an error.
 Similarly, if `output` is `String`, extra command arguments are simply ignored as redundant.
 
-### Customising output name
+### Customizing Output Name
 
-It is possible to specify which constant or function you would like to output by adding `--output-name=myCustomConstantOrFunction` to the command:
+Specify a custom name for the output constant or function by adding `--output-name=myCustomConstantOrFunction` to the command:
 
 ```elm
 module Hello exposing (..)
@@ -98,7 +98,7 @@ $ run-elm --output-name=myCustomConstant Hello.elm
 Hello World!
 ```
 
-### Running modules in Elm project subdirectories
+### Running Modules in Elm Project Subdirectories
 
 By default, run-elm assumes that your Elm module is located in the root of its project directory.
 This means that Elm searches for `elm-package.json` and `elm-stuff` in the directory where the Elm file is and attempts to create these assets if they are missing.
@@ -117,4 +117,4 @@ However, the command will likely fail because `"source-directories"` is set to `
 
 Typing `run-elm --help` prints usage instructions, which can be handy for recalling what arguments and options the command accepts.
 
-You can also check what version of elm-run you have installed by typing `run-elm --version`.
+You can also check what version of run-elm you have installed by typing `run-elm --version`.
