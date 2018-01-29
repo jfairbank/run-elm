@@ -1,4 +1,6 @@
-## next
+## 2.1.0
+
+This release includes new command line options courtesy of [@kachkaev](https://github.com/kachkaev).
 
 ### NEW - Option `--output-name`
 
@@ -14,8 +16,9 @@ Add `--project-dir=/path/to/project` to help Elm pick the correct `elm-package.j
 
 ### Other Changes
 
-* Node 6 is supported again
+* Bring back Node 6 support.
 
+---
 
 ## v2.0.0
 
