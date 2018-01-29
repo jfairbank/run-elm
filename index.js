@@ -1,130 +1,163 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
-import path from 'path';
+import program from 'commander';
+import { stat, readFile, writeFile, unlink } from 'fs-extra';
 import { compileToString } from 'node-elm-compiler';
+import path from 'path';
 import sh from 'shelljs';
-import util from 'util';
 
-const elmFilename = (process.argv[2] || '').trim();
+(async () => {
+  program
+    // package.json is one level up because the compiled js file is in lib/
+    // eslint-disable-next-line import/no-unresolved
+    .version(require(path.resolve(__dirname, '../package.json')).version)
+    .usage('[options] <file> [arg1 arg2 ...]')
+    .description('Runs an Elm file and prints the result of `output` to stdout.'
+      + ' `output` can be a constant of type `String` or a function that accepts `List String` and returns `String`. You can supply command line arguments to the Elm file if `output` accepts `List String`.')
+    .option(
+      '--output-name [name]',
+      'constant or function name for printing results',
+      'output',
+    )
+    .option(
+      '--project-dir [path]',
+      'specific directory to search for elm-package.json or to create it (if different from Elm file location)'
+    )
+    .parse(process.argv);
 
-if (!elmFilename || elmFilename === '-h' || elmFilename === '--help') {
-  console.log('Usage: run-elm [FILENAME]');
-  process.exit(1);
-}
-
-if (!sh.which('elm')) {
-  console.error('Error: No elm global binary available. Please install with `npm install -g elm`.');
-  process.exit(1);
-}
-
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
-const unlink = util.promisify(fs.unlink);
-
-const runModuleName = 'RunElmMain';
-const templatePath = path.resolve(__dirname, `${runModuleName}.elm.template`);
-const templateWithArgsPath = path.resolve(__dirname, `${runModuleName}Args.elm.template`);
-
-const moduleName = path.basename(elmFilename, '.elm');
-const outputDir = path.resolve(path.dirname(elmFilename));
-const outputElmFilename = path.join(outputDir, `${runModuleName}.elm`);
-const outputCompiledFilename = path.join(outputDir, 'run-elm-main.js');
-
-function getElmFileContents() {
-  return readFile(elmFilename, 'utf-8')
-    .catch(
-      () => Promise.reject(`Elm file '${elmFilename}' does not exist`)
-    );
-}
-
-function determineNeedArgs(elmFileContents) {
-  const argsRegex = /^output *\w+ *=/;
-
-  return elmFileContents
-    .split('\n')
-    .some(line => argsRegex.test(line.trim()));
-}
-
-function getTemplate(needArgs) {
-  const templateFile = needArgs
-    ? templateWithArgsPath
-    : templatePath;
-
-  return readFile(templateFile, 'utf-8');
-}
-
-function createElmFile(template) {
-  const contents = template.replace('{module}', moduleName);
-
-  return writeFile(outputElmFilename, contents, 'utf-8');
-}
-
-async function compileElmFile() {
-  sh.cd(outputDir);
-
-  const contents = await compileToString([outputElmFilename], { yes: true });
-
-  return writeFile(outputCompiledFilename, contents);
-}
-
-function runElmFile(needArgs) {
-  return new Promise((resolve) => {
-    const { worker } = require(outputCompiledFilename)[runModuleName];
-    let app;
-
-    if (needArgs) {
-      const args = process.argv.slice(3);
-      app = worker(args);
-    } else {
-      app = worker();
-    }
-
-    app.ports.sendOutput.subscribe((output) => {
-      console.log(output);
-      resolve();
-    });
-  });
-}
-
-function cleanup() {
-  return Promise.all([
-    unlink(outputElmFilename).catch(() => {}),
-    unlink(outputCompiledFilename).catch(() => {}),
-  ]);
-}
-
-function handleError(err) {
-  let message;
-
-  if (typeof err === 'object' && 'message' in err) {
-    if (/does not expose `output`/.test(err.message)) {
-      message = `Elm module \`${moduleName}\` does not define a String \`output\`.`;
-    } else {
-      message = err.message;
-    }
-  } else {
-    message = err;
-  }
-
-  console.error('Error:', message);
-}
-
-async function main() {
-  try {
-    const elmFileContents = await getElmFileContents();
-    const needArgs = determineNeedArgs(elmFileContents);
-    const template = await getTemplate(needArgs);
-
-    await createElmFile(template);
-    await compileElmFile();
-    await runElmFile(needArgs);
-    await cleanup();
-  } catch (e) {
-    await cleanup();
-    handleError(e);
+  // run-elm expects one or more arguments, so exit if no arguments given
+  if (program.args.length === 0) {
+    console.log(program.help());
     process.exit(1);
   }
-}
 
-main();
+  // read args and options
+  const rawUserModuleFileName = program.args[0];
+  const outputName = program.outputName;
+  const rawProjectDir = program.projectDir;
+  const argsToOutput = program.args.slice(1);
+
+  // extract key paths
+  const timestamp = +new Date();
+  const mainModule = `RunElmMain${timestamp}`;
+  const templatePath = path.resolve(__dirname, 'RunElmMain.elm.template');
+  const templateWithArgsPath = path.resolve(__dirname, 'RunElmMainWithArgs.elm.template');
+  const userModulePath = path.resolve(rawUserModuleFileName);
+  const userModule = path.basename(userModulePath, '.elm');
+  const projectDir = rawProjectDir
+    ? path.resolve(rawProjectDir)
+    : path.resolve(path.dirname(userModulePath));
+  const mainModuleFilename = path.join(projectDir, `${mainModule}.elm`);
+  const outputCompiledFilename = path.join(projectDir, `run-elm-main-${timestamp}.js`);
+
+  let exitCode = 0;
+  try {
+    // ensure elm is installed
+    if (!sh.which('elm')) {
+      throw new Error('No elm global binary available. Please install with `npm install -g elm`.');
+    }
+
+    // ensure --output-name is specified adequately
+    if (!outputName.match(/^[a-z_]\w*$/)) {
+      throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
+    }
+    if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variablue you would like to output.`);
+    }
+
+    // ensure user module path is adequate
+    try {
+      const userModuleFileStats = await stat(userModulePath);
+      if (!userModuleFileStats.isFile()) {
+        throw new Error();
+      }
+    } catch (err) {
+      throw new Error(`File '${userModulePath}' does not exist`);
+    }
+    if (!userModulePath.match(/\.elm$/i, '')) {
+      throw new Error(`File '${userModulePath}' should have .elm file extension`);
+    }
+
+    // ensure project folder is adequate
+    try {
+      const projectDirStats = await stat(projectDir);
+      if (!projectDirStats.isDirectory()) {
+        throw new Error();
+      }
+    } catch (err) {
+      throw new Error(`Provided --project-dir '${rawProjectDir}' is not a directory`);
+    }
+    if (userModulePath.indexOf(`${projectDir}/`) !== 0) {
+      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
+    }
+
+    // read user module and determine what template to use
+    let userModuleContents;
+    try {
+      userModuleContents = await readFile(userModulePath, 'utf-8');
+    } catch (err) {
+      throw new Error(`File '${userModulePath}' could not be read`);
+    }
+    const argsRegex = new RegExp(`^${outputName} +\\w+ *=`);
+    const needArgs = userModuleContents
+      .split('\n')
+      .some(line => argsRegex.test(line.trim()));
+
+    // read main module template
+    sh.cd(projectDir);
+    let template;
+    const chosenTemplatePath = needArgs ? templateWithArgsPath : templatePath;
+    try {
+      template = await readFile(chosenTemplatePath, 'utf-8');
+    } catch (err) {
+      throw new Error(`Elm file '${chosenTemplatePath}' does not exist`);
+    }
+
+    // create main module file from template
+    const mainModuleContents = template
+      .replace('{mainModule}', mainModule)
+      .replace('{userModule}', userModule)
+      .replace(/\{output\}/g, outputName);
+    await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
+
+    // compile main module
+    const contents = await compileToString([mainModuleFilename], { yes: true });
+    await writeFile(outputCompiledFilename, contents);
+
+    // run compiled elm file
+    await new Promise((resolve) => {
+      const { worker } = require(outputCompiledFilename)[mainModule];
+      const app = needArgs ? worker(argsToOutput) : worker();
+      app.ports.sendOutput.subscribe((output) => {
+        console.log(output);
+        resolve();
+      });
+    });
+  } catch (err) {
+    // handle error
+    let message;
+    if (typeof err === 'object' && 'message' in err) {
+      if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
+        message = `Elm file \`${userModulePath}\` does not define \`${outputName}\``;
+      } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
+        message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${projectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
+      } else {
+        message = err.message;
+      }
+    } else {
+      message = err;
+    }
+    console.error('Error:', message);
+    if (err.stack && process.env.DEBUG) {
+      console.error(err.stack.substring(err.toString().length + 1));
+    }
+    exitCode = 1;
+  } finally {
+    // cleanup
+    await Promise.all([
+      unlink(mainModuleFilename).catch(() => {}),
+      unlink(outputCompiledFilename).catch(() => {})
+    ]);
+  }
+  process.exit(exitCode);
+})();

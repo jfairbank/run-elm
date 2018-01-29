@@ -1,6 +1,25 @@
+## next
+
+### NEW - Option `--output-name`
+
+Specify a custom name for the output constant or function by adding `--output-name=myCustomConstantOrFunction`.
+
+### NEW - Option `--project-dir`
+
+Add `--project-dir=/path/to/project` to help Elm pick the correct `elm-package.json` and `elm-stuff` if the Elm file is in a subdirectory.
+
+### NEW - Meta Options
+
+`run-elm --help` prints usage instructions and `run-elm --version` outputs the installed version.
+
+### Other Changes
+
+* Node 6 is supported again
+
+
 ## v2.0.0
 
-### NEW - Command line arguments
+### NEW - Command Line Arguments
 
 run-elm now supports command line arguments to `output` as a list of strings.
 

@@ -1,8 +1,8 @@
-port module RunElmMain exposing (..)
+port module {mainModule} exposing (..)
 
 import Json.Decode
 import Platform exposing (program)
-import {module} exposing (output)
+import {userModule} exposing ({output})
 
 
 port sendOutput : String -> Cmd msg
@@ -10,7 +10,7 @@ port sendOutput : String -> Cmd msg
 
 init : ( (), Cmd msg )
 init =
-    ( (), sendOutput output )
+    ( (), sendOutput {output} )
 
 
 main : Program Never () msg

@@ -3,11 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const inspect = require('util').inspect;
 
-const runElmPath = path.resolve(
-  path.join(__dirname, '..', 'lib', 'index.js'));
+const runElmPath = path.resolve(path.join(__dirname, '..', 'lib', 'index.js'));
 
-const baseDir = path.resolve(
-  path.join(__dirname, '..', 'tests'));
+const baseDir = path.resolve(path.join(__dirname, '..', 'tests'));
 
 const testDirs = fs
   .readdirSync(baseDir)
@@ -18,19 +16,17 @@ const testDirs = fs
   .filter(test => fs.statSync(test.path).isDirectory());
 
 const results = testDirs.map((test) => {
-  const argsPath = path.join(test.path, 'args.json');
+  const inputPath = path.join(test.path, 'input.txt');
 
-  const args = fs.existsSync(argsPath)
-    ? require(argsPath)
-    : [];
+  const rawInput = fs.readFileSync(inputPath, 'utf-8');
+  const input = rawInput.trim().split(' ');
 
-  const mainFile = path.join(test.path, 'Main.elm');
-  const expectedOutput = fs.readFileSync(path.join(test.path, 'output.txt'));
+  const expectedOutput = fs.readFileSync(path.join(test.path, 'output.txt'), 'utf-8');
 
   let actualOutput;
 
   try {
-    actualOutput = spawnSync(runElmPath, [mainFile, ...args]).stdout;
+    actualOutput = spawnSync(runElmPath, input, { cwd: test.path }).stdout.toString();
   } catch (err) {
     return {
       pass: false,
@@ -40,12 +36,12 @@ const results = testDirs.map((test) => {
     };
   }
 
-  if (actualOutput.toString() !== expectedOutput.toString()) {
+  if (actualOutput !== expectedOutput) {
     return {
       pass: false,
       reason: `${test.name} failed: Output mismatch
-  Expected: ${inspect(expectedOutput.toString())}
-  Actual:   ${inspect(actualOutput.toString())}
+  Expected: ${inspect(expectedOutput)}
+  Actual:   ${inspect(actualOutput)}
 `,
     };
   }
