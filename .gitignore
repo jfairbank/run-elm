@@ -2,7 +2,7 @@
 elm-stuff/
 # elm-repl generated files
 repl-temp-*
-lib/index.js
+lib/
 node_modules/
 tests/**/elm-package.json
 !tests/subdirectory/elm-package.json
