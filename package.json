@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "eslint src",
     "pretest": "npm run build",
-    "test": "node tests/run-tests.js",
+    "test": "jest \\.test.js",
     "build": "babel src --out-dir lib && cpx 'src/*.elm.template' lib",
     "prepublish": "npm run build"
   },
@@ -47,9 +47,17 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "child-process-promise": "^2.2.1",
     "cpx": "^1.5.0",
     "eslint": "^4.16.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.8.0",
+    "jest": "^22.1.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "test/"
+    ]
   }
 }
