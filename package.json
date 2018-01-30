@@ -13,10 +13,10 @@
     "run-elm": "lib/index.js"
   },
   "scripts": {
-    "lint": "eslint index.js",
+    "lint": "eslint src",
     "pretest": "npm run build",
     "test": "node tests/run-tests.js",
-    "build": "babel index.js --out-dir lib",
+    "build": "babel src --out-dir lib",
     "prepublish": "npm run build"
   },
   "repository": {
