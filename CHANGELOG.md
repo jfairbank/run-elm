@@ -1,3 +1,10 @@
+## next
+
+### Other Changes
+
+* switch to jest testing framework ([#7](https://github.com/jfairbank/run-elm/pull/7))
+
+
 ## 2.1.0
 
 This release includes new command line options courtesy of [@kachkaev](https://github.com/kachkaev).
