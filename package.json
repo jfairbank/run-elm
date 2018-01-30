@@ -13,7 +13,7 @@
     "run-elm": "lib/index.js"
   },
   "scripts": {
-    "lint": "eslint src",
+    "lint": "eslint src test --ignore-pattern elm-stuff",
     "pretest": "npm run build",
     "test": "jest \\.test.js",
     "build": "babel src --out-dir lib && cpx 'src/*.elm.template' lib",
