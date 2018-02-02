@@ -18,13 +18,17 @@ describe('run-elm', () => {
       const input = (await readFile(inputPath, 'utf-8')).trim().split(' ');
       const expectedOutput = await readFile(resolve(projectDir, 'output.txt'), 'utf-8');
 
+      let result;
       try {
-        const { stdout } = await execFile(runElmPath, input, { cwd: projectDir });
-        expect(stdout).toEqual(expectedOutput);
-        done();
-      } catch ({ code, stderr }) {
+        result = await execFile(runElmPath, input, { cwd: projectDir });
+      } catch (e) {
+        const { code, stderr } = e;
         done.fail(`process timeout or non-zero exit code ${code}${stderr ? `: ${stderr}` : ''}`);
+        return;
       }
+      expect(result.stdout).toEqual(expectedOutput);
+      expect(result.stderr).toEqual('');
+      done();
     }, 30000);
   });
 });
