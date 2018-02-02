@@ -1,9 +1,10 @@
 {
     "version": "1.0.0",
-    "summary": "a project where Main.elm is in subdirectory",
+    "summary": "a project that does not list --project-dir in source-directories",
     "repository": "https://github.com/user/project.git",
     "license": "BSD3",
     "source-directories": [
+        "extra",
         "src"
     ],
     "exposed-modules": [],

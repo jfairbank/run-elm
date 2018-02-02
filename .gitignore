@@ -8,5 +8,4 @@ node_modules/
 # test-related-stuff
 coverage/
 test/**/elm-package.json
-!test/integration/case-projects/subdirectory/elm-package.json
-!test/integration/case-projects/subdirectory-with-dependencies/elm-package.json
+!test/integration/case-projects/subdirectory*/elm-package.json
