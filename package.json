@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "eslint src test --ignore-pattern elm-stuff",
     "pretest": "npm run build",
-    "test": "jest \\.test.js",
+    "test": "jest",
     "build": "babel src --out-dir lib && cpx 'src/*.elm.template' lib",
     "prepublish": "npm run build"
   },
