@@ -13,7 +13,7 @@ describe('run-elm', () => {
   projectDirs.forEach((projectDir) => {
     const projectName = basename(projectDir);
 
-    test(`correctly works for case project \`${projectName}\``, async (done) => {
+    test(`correctly works for case project \`${projectName}\``, async () => {
       const inputPath = resolve(projectDir, 'input.txt');
       const input = (await readFile(inputPath, 'utf-8')).trim().split(' ');
       const expectedOutput = await readFile(resolve(projectDir, 'output.txt'), 'utf-8');
@@ -23,12 +23,10 @@ describe('run-elm', () => {
         result = await execFile(runElmPath, input, { cwd: projectDir });
       } catch (e) {
         const { code, stderr } = e;
-        done.fail(`process timeout or non-zero exit code ${code}${stderr ? `: ${stderr}` : ''}`);
-        return;
+        throw new Error(`process timeout or non-zero exit code ${code}${stderr ? `: ${stderr}` : ''}`);
       }
       expect(result.stdout).toEqual(expectedOutput);
       expect(result.stderr).toEqual('');
-      done();
     }, 30000);
   });
 });
