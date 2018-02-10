@@ -2,7 +2,10 @@
 elm-stuff/
 # elm-repl generated files
 repl-temp-*
-lib/index.js
+lib/
 node_modules/
-tests/**/elm-package.json
-!tests/subdirectory/elm-package.json
+
+# test-related-stuff
+coverage/
+test/**/elm-package.json
+!test/integration/case-projects/subdirectory*/elm-package.json
