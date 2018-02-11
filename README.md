@@ -1,6 +1,7 @@
 # run-elm
 
 [![npm](https://img.shields.io/npm/v/run-elm.svg?style=flat-square)](https://www.npmjs.com/package/run-elm)
+[![Travis branch](https://img.shields.io/travis/jfairbank/run-elm/master.svg?style=flat-square)](https://travis-ci.org/jfairbank/run-elm)
 
 ##### Run Elm code from the command line
 
