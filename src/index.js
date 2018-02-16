@@ -159,5 +159,10 @@ import sh from 'shelljs';
       unlink(outputCompiledFilename).catch(() => {})
     ]);
   }
-  process.exit(exitCode);
+
+  // do not call process.exit(0) to avoid stdout truncation
+  // https://github.com/nodejs/node/issues/6456
+  if (exitCode) {
+    process.exit(exitCode);
+  }
 })();
