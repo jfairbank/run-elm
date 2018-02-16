@@ -20,11 +20,16 @@ describe('run-elm', () => {
 
       let result;
       try {
-        result = await execFile(runElmPath, input, { cwd: projectDir });
+        result = await execFile(runElmPath, input, {
+          cwd: projectDir,
+          maxBuffer: 1024 * 1024 * 100
+        });
       } catch (e) {
         const { code, stderr } = e;
-        throw new Error(`process timeout or non-zero exit code ${code}${stderr ? `: ${stderr}` : ''}`);
+        const message = stderr || e.message;
+        throw new Error(`process timeout or non-zero exit code ${code}${message ? `: ${message}` : ''}`);
       }
+      expect(result.stdout.length).toEqual(expectedOutput.length);
       expect(result.stdout).toEqual(expectedOutput);
       expect(result.stderr).toEqual('');
     }, 30000);
