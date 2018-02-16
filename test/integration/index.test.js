@@ -25,9 +25,9 @@ describe('run-elm', () => {
           maxBuffer: 1024 * 1024 * 100
         });
       } catch (e) {
-        const { code, stderr } = e;
-        const message = stderr || e.message;
-        throw new Error(`process timeout or non-zero exit code ${code}${message ? `: ${message}` : ''}`);
+        const { code, stderr, message } = e;
+        const details = stderr || message;
+        throw new Error(`process timeout or non-zero exit code ${code}${details ? `: ${details}` : ''}`);
       }
       expect(result.stdout.length).toEqual(expectedOutput.length);
       expect(result.stdout).toEqual(expectedOutput);
