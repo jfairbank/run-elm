@@ -1,1 +1,0 @@
-static output from subdirectory with dependencies

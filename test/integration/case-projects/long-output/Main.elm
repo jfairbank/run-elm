@@ -6,4 +6,4 @@ import String exposing (join)
 
 output : String
 output =
-    join "\n" <| toList <| repeat 100000 "static output"
+    join "\n" <| toList <| repeat 1000000 "static output"
