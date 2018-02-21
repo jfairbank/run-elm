@@ -58,6 +58,7 @@
     "testEnvironment": "node",
     "roots": [
       "test/"
-    ]
+    ],
+    "watchPathIgnorePatterns": ["<rootDir>/test/.*/run-elm-main.*\\.js", "<rootDir>/test/.*/RunElmMain.*\\.elm"]
   }
 }

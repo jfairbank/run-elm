@@ -1,3 +1,7 @@
+## next
+
+* Fix stdout truncation ([#8](https://github.com/jfairbank/run-elm/pull/8))
+
 ## 2.1.0
 
 This release includes new command line options courtesy of [@kachkaev](https://github.com/kachkaev).
