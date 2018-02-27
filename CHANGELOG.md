@@ -1,6 +1,10 @@
-## next
+## 2.1.1
+
+### Bug Fixes
 
 * Fix stdout truncation ([#8](https://github.com/jfairbank/run-elm/pull/8))
+
+---
 
 ## 2.1.0
 
