@@ -13,13 +13,22 @@ describe('run-elm', () => {
   projectDirs.forEach((projectDir) => {
     const projectName = basename(projectDir);
     const conditions = require(resolve(projectDir, 'test-config.js'));
-    conditions.forEach(({ args, expectedStdout: rawExpectedStdout, title: rawTitle }, i) => {
+    conditions.forEach(({
+      args,
+      expectedExitCode = 0,
+      expectedStdout: rawExpectedStdout = '',
+      expectedStderr: rawExpectedStderr = '',
+      title: rawTitle
+    }, i) => {
       const autoTitle = conditions.length > 1 ? `condition ${i}` : '';
-      const title = rawTitle || autoTitle;
-      test(`correctly works for case project \`${projectName}\`${title ? ` (${title})` : ''}`, async () => {
+      const title = rawTitle ? `condition \`${rawTitle}\`` : autoTitle;
+      test(`correctly works for case project \`${projectName}\`${title ? ` → ${title}` : ''}`, async () => {
         const expectedStdout = typeof (rawExpectedStdout) === 'function'
           ? rawExpectedStdout()
           : rawExpectedStdout;
+        const expectedStderr = typeof (rawExpectedStderr) === 'function'
+          ? rawExpectedStderr({ projectDir })
+          : rawExpectedStderr;
 
         let result;
         try {
@@ -28,13 +37,20 @@ describe('run-elm', () => {
             maxBuffer: 1024 * 1024 * 100
           });
         } catch (e) {
-          const { code, stderr, message } = e;
-          const details = stderr || message;
-          throw new Error(`process timeout or non-zero exit code ${code}${details ? `: ${details}` : ''}`);
+          result = e;
         }
-        expect(result.stdout.length).toEqual(expectedStdout.length);
+        expect(result.code || 0).toEqual(expectedExitCode);
+
+        // when long output is expected, it is cheaper to check its length first
+        if (expectedStdout.length > 10000) {
+          expect(result.stdout.length).toEqual(expectedStdout.length);
+        }
         expect(result.stdout).toEqual(expectedStdout);
-        expect(result.stderr).toEqual('');
+
+        if (expectedStderr.length > 10000) {
+          expect(result.stderr.length).toEqual(expectedStderr.length);
+        }
+        expect(result.stderr).toEqual(expectedStderr);
       }, 30000);
     });
   });
