@@ -3,6 +3,10 @@ module.exports = [{
   args: ['Main.elm'],
   expectedStdout: 'static output\n',
 }, {
+  title: 'superfluous arguments',
+  args: ['Main.elm', 'superfluous', 'arguments'],
+  expectedStdout: 'static output\n',
+}, {
   title: 'non-existing module',
   args: ['NonExistingModule.elm'],
   expectedExitCode: 1,
