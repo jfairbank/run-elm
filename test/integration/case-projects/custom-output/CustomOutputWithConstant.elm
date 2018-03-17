@@ -1,4 +1,4 @@
-module Main exposing (..)
+module CustomOutputWithConstant exposing (..)
 
 
 customConstant : String
