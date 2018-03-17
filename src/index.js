@@ -62,7 +62,7 @@ import sh from 'shelljs';
       throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
     if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
-      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variablue you would like to output.`);
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variable you would like to output.`);
     }
 
     // ensure user module path is adequate
