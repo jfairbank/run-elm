@@ -23,6 +23,11 @@ import sh from 'shelljs';
       '--project-dir [path]',
       'specific directory to search for elm-package.json or to create it (if different from Elm file location)'
     )
+    .option(
+      '--report [format]',
+      'Format of error and warning reports (e.g. --report=json)',
+      'normal'
+    )
     .parse(process.argv);
 
   // run-elm expects one or more arguments, so exit if no arguments given
@@ -35,6 +40,7 @@ import sh from 'shelljs';
   const rawUserModuleFileName = program.args[0];
   const outputName = program.outputName;
   const rawProjectDir = program.projectDir;
+  const reportFormat = program.report;
   const argsToOutput = program.args.slice(1);
 
   // extract key paths
@@ -91,6 +97,11 @@ import sh from 'shelljs';
       throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
     }
 
+    // ensure report format is adequate
+    if (!['normal', 'json'].includes(reportFormat)) {
+      throw new Error(`It is not allowed to use \`${reportFormat}\` as a value for --report. Please use \`normal\` or \`json\`.`);
+    }
+
     // read user module and determine what template to use
     let userModuleContents;
     try {
@@ -121,7 +132,10 @@ import sh from 'shelljs';
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
-    const contents = await compileToString([mainModuleFilename], { yes: true });
+    const contents = await compileToString([mainModuleFilename], {
+      yes: true,
+      report: reportFormat,
+    });
     await writeFile(outputCompiledFilename, contents);
 
     // run compiled elm file
