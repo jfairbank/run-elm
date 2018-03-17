@@ -114,6 +114,11 @@ If `--project-dir` is specified, it has to be one of the parent directories to y
 If the given directory does not contain `elm-package.json` and `elm-stuff`, these assets are created automatically.
 However, the command will likely fail because `"source-directories"` is set to `["."]` by default, which does not include subdirectories.
 
+### Setting report format
+
+Passing `--report=json` to run-elm makes Elm compilation errors in `stderr` easier to parse.
+Please note that only the last one or two lines in `stderr` may be valid JSON strings because there exist additional messages such as `Error: Compilation failed`.
+
 ### Meta
 
 Typing `run-elm --help` prints usage instructions, which can be handy for recalling what arguments and options the command accepts.
