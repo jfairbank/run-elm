@@ -78,10 +78,10 @@ import sh from 'shelljs';
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`File '${userModulePath}' does not exist`);
+      throw new Error(`File \`${userModulePath}\` does not exist.`);
     }
     if (!userModulePath.match(/\.elm$/i, '')) {
-      throw new Error(`File '${userModulePath}' should have .elm file extension`);
+      throw new Error(`File \`${userModulePath}\` should have .elm file extension.`);
     }
 
     // ensure project folder is adequate
@@ -91,7 +91,7 @@ import sh from 'shelljs';
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`Provided --project-dir '${rawProjectDir}' is not a directory`);
+      throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
     }
     if (userModulePath.indexOf(`${projectDir}/`) !== 0) {
       throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
