@@ -1,5 +1,5 @@
 import { execFile } from 'child-process-promise';
-import { readdirSync, statSync } from 'fs-extra';
+import { readdirSync, statSync, remove } from 'fs-extra';
 import { basename, resolve } from 'path';
 
 const runElmPath = resolve(__dirname, '../../lib/index.js');
@@ -15,6 +15,7 @@ describe('run-elm', () => {
     const conditions = require(resolve(projectDir, 'test-config.js'));
     conditions.forEach(({
       args,
+      cleanElmStuff,
       expectedExitCode = 0,
       expectedStdout: rawExpectedStdout,
       expectedStderr: rawExpectedStderr,
@@ -32,6 +33,9 @@ describe('run-elm', () => {
 
         let result;
         try {
+          if (cleanElmStuff) {
+            await remove(resolve(projectDir, 'elm-stuff'));
+          }
           result = await execFile(runElmPath, args, {
             cwd: projectDir,
             maxBuffer: 1024 * 1024 * 100
