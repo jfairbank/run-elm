@@ -2,7 +2,7 @@
 
 ### NEW - Option `--report`
 
-Passing `--report=json` to run-elm makes Elm compilation errors `stderr` easier to parse ([#12](https://github.com/jfairbank/run-elm/pull/12))
+Passing `--report=json` to run-elm makes Elm compilation errors in `stderr` easier to parse ([#12](https://github.com/jfairbank/run-elm/pull/12))
 
 ---
 
