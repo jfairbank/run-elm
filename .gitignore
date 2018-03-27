@@ -4,8 +4,11 @@ elm-stuff/
 repl-temp-*
 lib/
 node_modules/
+yarn-error.log
 
 # test-related-stuff
 coverage/
 test/**/elm-package.json
+test/**/RunElmMain*
+!test/integration/case-projects/elm-package*/elm-package.json
 !test/integration/case-projects/subdirectory*/elm-package.json

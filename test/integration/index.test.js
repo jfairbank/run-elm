@@ -1,5 +1,5 @@
 import { execFile } from 'child-process-promise';
-import { readdirSync, statSync } from 'fs-extra';
+import { readdirSync, statSync, remove } from 'fs-extra';
 import { basename, resolve } from 'path';
 
 const runElmPath = resolve(__dirname, '../../lib/index.js');
@@ -15,9 +15,10 @@ describe('run-elm', () => {
     const conditions = require(resolve(projectDir, 'test-config.js'));
     conditions.forEach(({
       args,
+      cleanElmStuff,
       expectedExitCode = 0,
-      expectedStdout: rawExpectedStdout = '',
-      expectedStderr: rawExpectedStderr = '',
+      expectedStdout: rawExpectedStdout,
+      expectedStderr: rawExpectedStderr,
       title: rawTitle
     }, i) => {
       const autoTitle = conditions.length > 1 ? `condition ${i}` : '';
@@ -32,6 +33,9 @@ describe('run-elm', () => {
 
         let result;
         try {
+          if (cleanElmStuff) {
+            await remove(resolve(projectDir, 'elm-stuff'));
+          }
           result = await execFile(runElmPath, args, {
             cwd: projectDir,
             maxBuffer: 1024 * 1024 * 100
@@ -42,15 +46,19 @@ describe('run-elm', () => {
         expect(result.code || 0).toEqual(expectedExitCode);
 
         // when long output is expected, it is cheaper to check its length first
-        if (expectedStdout.length > 10000) {
-          expect(result.stdout.length).toEqual(expectedStdout.length);
+        if (typeof expectedStdout === 'string') {
+          if (expectedStdout.length > 10000) {
+            expect(result.stdout.length).toEqual(expectedStdout.length);
+          }
+          expect(result.stdout).toEqual(expectedStdout);
         }
-        expect(result.stdout).toEqual(expectedStdout);
 
-        if (expectedStderr.length > 10000) {
-          expect(result.stderr.length).toEqual(expectedStderr.length);
+        if (typeof expectedStderr === 'string') {
+          if (expectedStderr.length > 10000) {
+            expect(result.stderr.length).toEqual(expectedStderr.length);
+          }
+          expect(result.stderr).toEqual(expectedStderr);
         }
-        expect(result.stderr).toEqual(expectedStderr);
       }, 30000);
     });
   });

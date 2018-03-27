@@ -23,6 +23,11 @@ import sh from 'shelljs';
       '--project-dir [path]',
       'specific directory to search for elm-package.json or to create it (if different from Elm file location)'
     )
+    .option(
+      '--report [format]',
+      'Format of error and warning reports (e.g. --report=json)',
+      'normal'
+    )
     .parse(process.argv);
 
   // run-elm expects one or more arguments, so exit if no arguments given
@@ -35,6 +40,7 @@ import sh from 'shelljs';
   const rawUserModuleFileName = program.args[0];
   const outputName = program.outputName;
   const rawProjectDir = program.projectDir;
+  const reportFormat = program.report;
   const argsToOutput = program.args.slice(1);
 
   // extract key paths
@@ -62,7 +68,7 @@ import sh from 'shelljs';
       throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
     if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
-      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variablue you would like to output.`);
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variable you would like to output.`);
     }
 
     // ensure user module path is adequate
@@ -72,10 +78,10 @@ import sh from 'shelljs';
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`File '${userModulePath}' does not exist`);
+      throw new Error(`File \`${userModulePath}\` does not exist.`);
     }
     if (!userModulePath.match(/\.elm$/i, '')) {
-      throw new Error(`File '${userModulePath}' should have .elm file extension`);
+      throw new Error(`File \`${userModulePath}\` should have .elm file extension.`);
     }
 
     // ensure project folder is adequate
@@ -85,10 +91,15 @@ import sh from 'shelljs';
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`Provided --project-dir '${rawProjectDir}' is not a directory`);
+      throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
     }
     if (userModulePath.indexOf(`${projectDir}/`) !== 0) {
       throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
+    }
+
+    // ensure report format is adequate
+    if (!['normal', 'json'].includes(reportFormat)) {
+      throw new Error(`It is not allowed to use \`${reportFormat}\` as a value for --report. Please use \`normal\` or \`json\`.`);
     }
 
     // read user module and determine what template to use
@@ -121,7 +132,10 @@ import sh from 'shelljs';
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
-    const contents = await compileToString([mainModuleFilename], { yes: true });
+    const contents = await compileToString([mainModuleFilename], {
+      yes: true,
+      report: reportFormat,
+    });
     await writeFile(outputCompiledFilename, contents);
 
     // run compiled elm file
