@@ -13,7 +13,7 @@
     "run-elm": "lib/index.js"
   },
   "scripts": {
-    "clean-test-case-projects": "cd test/integration && git clean -d -f -X",
+    "test:clean": "cd test/integration && git clean -d -f -X",
     "lint": "eslint src test --ignore-pattern elm-stuff",
     "pretest": "npm run build",
     "test": "jest",
