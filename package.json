@@ -1,6 +1,6 @@
 {
   "name": "run-elm",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Run Elm code from the command line",
   "files": [
     "lib",
