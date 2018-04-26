@@ -25,8 +25,12 @@ import sh from 'shelljs';
     )
     .option(
       '--report [format]',
-      'Format of error and warning reports (e.g. --report=json)',
+      'format of error and warning reports (e.g. --report=json)',
       'normal'
+    )
+    .option(
+      '--path-to-elm-make [path]',
+      'location of `elm-make` binary (if not defined, a globally available `elm-make` is used)'
     )
     .parse(process.argv);
 
@@ -41,6 +45,7 @@ import sh from 'shelljs';
   const outputName = program.outputName;
   const rawProjectDir = program.projectDir;
   const reportFormat = program.report;
+  const pathToElmMake = program.pathToElmMake;
   const argsToOutput = program.args.slice(1);
 
   // extract key paths
@@ -135,6 +140,7 @@ import sh from 'shelljs';
     const contents = await compileToString([mainModuleFilename], {
       yes: true,
       report: reportFormat,
+      pathToMake: pathToElmMake,
     });
     await writeFile(outputCompiledFilename, contents);
 
