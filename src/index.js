@@ -1,67 +1,31 @@
-#!/usr/bin/env node
-
-import program from 'commander';
-import { stat, readFile, writeFile, unlink } from 'fs-extra';
-import { compileToString } from 'node-elm-compiler';
-import path from 'path';
+import { stat, readFile, writeFile, unlink, openSync, exists } from 'fs-extra';
+import { compileSync } from 'node-elm-compiler';
 import sh from 'shelljs';
+import path from 'path';
+import defaultOptions from './defaultOptions';
 
-(async () => {
-  program
-    // package.json is one level up because the compiled js file is in lib/
-    // eslint-disable-next-line import/no-unresolved
-    .version(require(path.resolve(__dirname, '../package.json')).version)
-    .usage('[options] <file> [arg1 arg2 ...]')
-    .description('Runs an Elm file and prints the result of `output` to stdout.'
-      + ' `output` can be a constant of type `String` or a function that accepts `List String` and returns `String`. You can supply command line arguments to the Elm file if `output` accepts `List String`.')
-    .option(
-      '--output-name [name]',
-      'constant or function name for printing results',
-      'output',
-    )
-    .option(
-      '--project-dir [path]',
-      'specific directory to search for elm-package.json or to create it (if different from Elm file location)'
-    )
-    .option(
-      '--report [format]',
-      'format of error and warning reports (e.g. --report=json)',
-      'normal'
-    )
-    .option(
-      '--path-to-elm-make [path]',
-      'location of `elm-make` binary (if not defined, a globally available `elm-make` is used)'
-    )
-    .parse(process.argv);
-
-  // run-elm expects one or more arguments, so exit if no arguments given
-  if (program.args.length === 0) {
-    console.log(program.help());
-    process.exit(1);
-  }
-
-  // read args and options
-  const rawUserModuleFileName = program.args[0];
-  const outputName = program.outputName;
-  const rawProjectDir = program.projectDir;
-  const reportFormat = program.report;
-  const pathToElmMake = program.pathToElmMake;
-  const argsToOutput = program.args.slice(1);
-
+export default async (userModuleFileName, {
+  outputName = defaultOptions.outputName,
+  projectDir,
+  report = defaultOptions.report,
+  pathToElmMake,
+  argsToOutput = [],
+} = {}) => {
   // extract key paths
-  const timestamp = +new Date();
-  const mainModule = `RunElmMain${timestamp}`;
+  const moduleId = `${+new Date()}${Math.round(Math.random() * 100000000)}`;
+  const mainModule = `RunElmMain${moduleId}`;
   const templatePath = path.resolve(__dirname, 'RunElmMain.elm.template');
   const templateWithArgsPath = path.resolve(__dirname, 'RunElmMainWithArgs.elm.template');
-  const userModulePath = path.resolve(rawUserModuleFileName);
+  const userModulePath = path.resolve(userModuleFileName);
   const userModule = path.basename(userModulePath, '.elm');
-  const projectDir = rawProjectDir
-    ? path.resolve(rawProjectDir)
-    : path.resolve(path.dirname(userModulePath));
-  const mainModuleFilename = path.join(projectDir, `${mainModule}.elm`);
-  const outputCompiledFilename = path.join(projectDir, `run-elm-main-${timestamp}.js`);
+  const resolvedProjectDir = (projectDir
+    ? path.resolve(projectDir)
+    : path.resolve(path.dirname(userModulePath)));
+  const mainModuleFilename = path.join(resolvedProjectDir, `${mainModule}.elm`);
+  const outputCompiledFilename = path.join(resolvedProjectDir, `run-elm-main-${moduleId}.js`);
+  const elmCompileStdout = path.join(resolvedProjectDir, `stdout-${moduleId}.txt`);
+  const elmCompileStderr = path.join(resolvedProjectDir, `stderr-${moduleId}.txt`);
 
-  let exitCode = 0;
   try {
     // ensure global elm is installed (unless pathToElmMake is given)
     if (!pathToElmMake && !sh.which('elm')) {
@@ -73,7 +37,7 @@ import sh from 'shelljs';
       throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
     if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
-      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the variable you would like to output.`);
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the symbol you would like to output.`);
     }
 
     // ensure user module path is adequate
@@ -91,20 +55,20 @@ import sh from 'shelljs';
 
     // ensure project folder is adequate
     try {
-      const projectDirStats = await stat(projectDir);
+      const projectDirStats = await stat(resolvedProjectDir);
       if (!projectDirStats.isDirectory()) {
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
+      throw new Error(`Provided --project-dir \`${resolvedProjectDir}\` is not a directory.`);
     }
-    if (!userModulePath.startsWith(`${projectDir}${path.sep}`)) {
-      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${projectDir}\`.`);
+    if (!userModulePath.startsWith(`${resolvedProjectDir}${path.sep}`)) {
+      throw new Error(`File \`${resolvedProjectDir}\` must be located within --project-dir \`${projectDir}\`.`);
     }
 
     // ensure report format is adequate
-    if (!['normal', 'json'].includes(reportFormat)) {
-      throw new Error(`It is not allowed to use \`${reportFormat}\` as a value for --report. Please use \`normal\` or \`json\`.`);
+    if (!['normal', 'json'].includes(report)) {
+      throw new Error(`It is not allowed to use \`${report}\` as a value for --report. Please use \`normal\` or \`json\`.`);
     }
 
     // read user module and determine what template to use
@@ -120,7 +84,7 @@ import sh from 'shelljs';
       .some(line => argsRegex.test(line.trim()));
 
     // read main module template
-    sh.cd(projectDir);
+    sh.cd(resolvedProjectDir);
     let template;
     const chosenTemplatePath = needArgs ? templateWithArgsPath : templatePath;
     try {
@@ -137,22 +101,31 @@ import sh from 'shelljs';
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
-    const contents = await compileToString([mainModuleFilename], {
+    compileSync([mainModuleFilename], {
       yes: true,
-      report: reportFormat,
+      report,
       pathToMake: pathToElmMake,
+      output: outputCompiledFilename,
+      processOpts: {
+        stdio: [0, openSync(elmCompileStdout, 'w'), openSync(elmCompileStderr, 'w')]
+      }
     });
-    await writeFile(outputCompiledFilename, contents);
+    if (!await exists(outputCompiledFilename)) {
+      const errorMessage = `Compilation failed\n${await readFile(elmCompileStderr, 'utf8')}${await readFile(elmCompileStdout, 'utf8')}`;
+      throw new Error(errorMessage);
+    }
 
     // run compiled elm file
+    let result;
     await new Promise((resolve) => {
       const { worker } = require(outputCompiledFilename)[mainModule];
       const app = needArgs ? worker(argsToOutput) : worker();
       app.ports.sendOutput.subscribe((output) => {
-        console.log(output);
+        result = output;
         resolve();
       });
     });
+    return result;
   } catch (err) {
     // handle error
     let message;
@@ -160,29 +133,22 @@ import sh from 'shelljs';
       if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
-        message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${projectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
+        message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
       } else {
         message = err.message;
       }
     } else {
       message = err;
     }
-    console.error('Error:', message);
-    if (err.stack && process.env.DEBUG) {
-      console.error(err.stack.substring(err.toString().length + 1));
-    }
-    exitCode = 1;
+    err.message = message;
+    throw err;
   } finally {
     // cleanup
     await Promise.all([
       unlink(mainModuleFilename).catch(() => {}),
-      unlink(outputCompiledFilename).catch(() => {})
+      unlink(outputCompiledFilename).catch(() => {}),
+      unlink(elmCompileStdout).catch(() => {}),
+      unlink(elmCompileStderr).catch(() => {}),
     ]);
   }
-
-  // do not call process.exit(0) to avoid stdout truncation
-  // https://github.com/nodejs/node/issues/6456
-  if (exitCode) {
-    process.exit(exitCode);
-  }
-})();
+};

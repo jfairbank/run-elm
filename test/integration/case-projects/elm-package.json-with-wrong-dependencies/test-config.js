@@ -1,6 +1,7 @@
 module.exports = [{
   title: 'default',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   cleanElmStuff: true,
   expectedExitCode: 1,
   expectedStdout: '',
@@ -14,7 +15,8 @@ published versions of this package.
 `,
 }, {
   title: 'report=json',
-  args: ['Main.elm', '--report=json'],
+  functionArgs: ['Main.elm', { report: 'json' }],
+  cliArgs: ['Main.elm', '--report=json'],
   cleanElmStuff: true,
   expectedExitCode: 1,
   expectedStdout: '',

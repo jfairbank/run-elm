@@ -1,6 +1,7 @@
 module.exports = [{
   title: 'report=normal (implicit, cold start)',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   cleanElmStuff: true,
   expectedStdout: '',
   expectedExitCode: 1,
@@ -31,7 +32,8 @@ Detected errors in 1 module.
 
 }, {
   title: 'report=normal (implicit)',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
@@ -48,7 +50,8 @@ Detected errors in 1 module.
 `,
 }, {
   title: 'report=normal (explicit)',
-  args: ['Main.elm', '--report=normal'],
+  functionArgs: ['Main.elm', { report: 'normal' }],
+  cliArgs: ['Main.elm', '--report=normal'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
@@ -65,7 +68,8 @@ Detected errors in 1 module.
 `,
 }, {
   title: 'report=json',
-  args: ['Main.elm', '--report=json'],
+  functionArgs: ['Main.elm', { report: 'json' }],
+  cliArgs: ['Main.elm', '--report=json'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed

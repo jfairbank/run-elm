@@ -6,17 +6,18 @@
     "lib",
     "README.md"
   ],
+  "main": "lib/index.js",
   "engines": {
     "node": ">=6.0.0"
   },
   "bin": {
-    "run-elm": "lib/index.js"
+    "run-elm": "lib/cli.js"
   },
   "scripts": {
     "test:clean": "cd test/integration && git clean -d -f -X",
     "lint": "eslint src test --ignore-pattern elm-stuff",
     "pretest": "npm run build",
-    "test": "jest",
+    "test": "jest --runInBand",
     "build": "babel src --out-dir lib && cpx 'src/*.elm.template' lib",
     "prepublish": "npm run build"
   },

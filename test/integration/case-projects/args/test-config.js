@@ -1,17 +1,27 @@
 module.exports = [{
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   expectedStdout: '!\n',
   expectedStderr: '',
 }, {
-  args: ['Main.elm', 'hello'],
+  functionArgs: ['Main.elm', {
+    argsToOutput: ['hello'],
+  }],
+  cliArgs: ['Main.elm', 'hello'],
   expectedStdout: 'hello!\n',
   expectedStderr: '',
 }, {
-  args: ['Main.elm', 'hello', 'world'],
+  functionArgs: ['Main.elm', {
+    argsToOutput: ['hello', 'world'],
+  }],
+  cliArgs: ['Main.elm', 'hello', 'world'],
   expectedStdout: 'hello-world!\n',
   expectedStderr: '',
 }, {
-  args: ['Main.elm', 'hello', 'world', '42'],
+  functionArgs: ['Main.elm', {
+    argsToOutput: ['hello', 'world', '42'],
+  }],
+  cliArgs: ['Main.elm', 'hello', 'world', '42'],
   expectedStdout: 'hello-world-42!\n',
   expectedStderr: '',
 }];
