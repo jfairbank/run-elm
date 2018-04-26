@@ -1,3 +1,11 @@
+## 2.3.0
+
+### NEW - Option `--path-to-elm-make`
+
+Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `elm-make` instance (e.g. the one installed locally) ([#13](https://github.com/jfairbank/run-elm/pull/13))
+
+---
+
 ## 2.2.0
 
 ### NEW - Option `--report`
