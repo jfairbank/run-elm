@@ -98,8 +98,7 @@ import sh from 'shelljs';
     } catch (err) {
       throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
     }
-    if (userModulePath.indexOf(`${projectDir}/`) !== 0
-    && userModulePath.indexOf(`${projectDir}\\`) !== 0) {
+    if (!userModulePath.startsWith(`${projectDir}${path.sep}`)) {
       throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${projectDir}\``);
     }
 
