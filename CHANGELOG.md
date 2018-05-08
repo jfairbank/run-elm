@@ -6,7 +6,7 @@ Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `el
 
 ### NEW - Node API interface
 
-It is now possible to execute run-elm via `import` / `require` in addition to spawning a child process ([#14](https://github.com/jfairbank/run-elm/pull/14))
+It is now possible to execute run-elm via `import` / `require` in addition to spawning a process ([#14](https://github.com/jfairbank/run-elm/pull/14))
 
 ### Other changes
 

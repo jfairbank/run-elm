@@ -130,21 +130,21 @@ You can also check what version of run-elm you have installed by typing `run-elm
 
 ## Node Module API
 
-If you are using run-elm in a node project, you don’t have to spawn a child process and can use `import` / `require` instead.
+If you are using run-elm in a Node project, you don’t have to spawn a separate process and can use `import` / `require` instead.
 
 ```js
-import runElm from "run-elm";
+import runElm from 'run-elm';
 // or
 // const runElm = require('run-elm').default;
 
 (async () => {
-  const result1 = await runElm("path/to/Main.elm");
+  const result1 = await runElm('path/to/Main.elm');
 
-  const result2 = await runElm("/path/to/project/subdirectory/Custom.elm", {
-    outputName: "customOutput",
-    projectDir: "/path/to/project",
-    report: "json",
-    pathToElmMake: "/path/to/elm-make"
+  const result2 = await runElm('/path/to/project/subdirectory/Custom.elm', {
+    outputName: 'customOutput',
+    projectDir: '/path/to/project',
+    report: 'json',
+    pathToElmMake: '/path/to/elm-make'
   });
 })();
 ```
