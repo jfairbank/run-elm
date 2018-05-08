@@ -99,7 +99,7 @@ import sh from 'shelljs';
       throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
     }
     if (!userModulePath.startsWith(`${projectDir}${path.sep}`)) {
-      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${projectDir}\``);
+      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${projectDir}\`.`);
     }
 
     // ensure report format is adequate
@@ -112,7 +112,7 @@ import sh from 'shelljs';
     try {
       userModuleContents = await readFile(userModulePath, 'utf-8');
     } catch (err) {
-      throw new Error(`File '${userModulePath}' could not be read`);
+      throw new Error(`File '${userModulePath}' could not be read.`);
     }
     const argsRegex = new RegExp(`^${outputName} +\\w+ *=`);
     const needArgs = userModuleContents
@@ -126,7 +126,7 @@ import sh from 'shelljs';
     try {
       template = await readFile(chosenTemplatePath, 'utf-8');
     } catch (err) {
-      throw new Error(`Elm file '${chosenTemplatePath}' does not exist`);
+      throw new Error(`Elm file '${chosenTemplatePath}' does not exist.`);
     }
 
     // create main module file from template
@@ -158,7 +158,7 @@ import sh from 'shelljs';
     let message;
     if (typeof err === 'object' && 'message' in err) {
       if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
-        message = `Elm file \`${userModulePath}\` does not define \`${outputName}\``;
+        message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
         message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${projectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
       } else {

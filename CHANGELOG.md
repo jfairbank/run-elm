@@ -4,6 +4,10 @@
 
 Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `elm-make` instance (e.g. the one installed locally) ([#13](https://github.com/jfairbank/run-elm/pull/13))
 
+### Other changes
+
+* Add full stops to some error messages for consistency ([#15](https://github.com/jfairbank/run-elm/pull/15))
+
 ---
 
 ## 2.2.0
