@@ -34,10 +34,10 @@ export default async (userModuleFileName, {
 
     // ensure --output-name is specified adequately
     if (!outputName.match(/^[a-z_]\w*$/)) {
-      throw new Error(`Provided --output-name \`${outputName}\` is not a valid constant or function name in elm.`);
+      throw new Error(`Provided output name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
     if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
-      throw new Error(`It is not allowed to use \`${outputName}\` as a value for --output-name. Please rename the symbol you would like to output.`);
+      throw new Error(`It is not allowed to use \`${outputName}\` as a value for output name. Please rename the symbol you would like to output.`);
     }
 
     // ensure user module path is adequate
@@ -60,15 +60,15 @@ export default async (userModuleFileName, {
         throw new Error();
       }
     } catch (err) {
-      throw new Error(`Provided --project-dir \`${resolvedProjectDir}\` is not a directory.`);
+      throw new Error(`Provided project dir \`${resolvedProjectDir}\` is not a directory.`);
     }
     if (!userModulePath.startsWith(`${resolvedProjectDir}${path.sep}`)) {
-      throw new Error(`File \`${resolvedProjectDir}\` must be located within --project-dir \`${projectDir}\`.`);
+      throw new Error(`File \`${resolvedProjectDir}\` must be located within project dir \`${projectDir}\`.`);
     }
 
     // ensure report format is adequate
     if (!['normal', 'json'].includes(report)) {
-      throw new Error(`It is not allowed to use \`${report}\` as a value for --report. Please use \`normal\` or \`json\`.`);
+      throw new Error(`It is not allowed to use \`${report}\` as a value for report. Please use \`normal\` or \`json\`.`);
     }
 
     // read user module and determine what template to use
@@ -133,7 +133,7 @@ export default async (userModuleFileName, {
       if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
-        message = `Elm file \`${userModulePath}\` cannot be reached from --project-dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
+        message = `Elm file \`${userModulePath}\` cannot be reached from project dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
       } else {
         message = err.message;
       }
