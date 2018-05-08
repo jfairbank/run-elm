@@ -14,7 +14,7 @@ describe('run-elm', () => {
     const projectName = basename(projectDir);
     const conditions = require(resolve(projectDir, 'test-config.js'));
     conditions.forEach(({
-      args,
+      args: rawArgs,
       cleanElmStuff,
       expectedExitCode = 0,
       expectedStdout: rawExpectedStdout,
@@ -24,6 +24,9 @@ describe('run-elm', () => {
       const autoTitle = conditions.length > 1 ? `condition ${i}` : '';
       const title = rawTitle ? `condition \`${rawTitle}\`` : autoTitle;
       test(`correctly works for case project \`${projectName}\`${title ? ` → ${title}` : ''}`, async () => {
+        const args = typeof (rawArgs) === 'function'
+          ? rawArgs()
+          : rawArgs;
         const expectedStdout = typeof (rawExpectedStdout) === 'function'
           ? rawExpectedStdout()
           : rawExpectedStdout;

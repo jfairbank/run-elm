@@ -10,7 +10,6 @@ too much of a hassle to bootstrap with the Elm architecture and the browser?
 run-elm has you covered. run-elm allows you to quickly define a module that you
 can run from the command line!
 
-
 ## Prerequisites
 
 run-elm requires Node versions >= 6.
@@ -27,7 +26,6 @@ npm install -g elm
 ```sh
 $ npm install -g run-elm
 ```
-
 
 ## Usage
 
@@ -118,6 +116,11 @@ However, the command will likely fail because `"source-directories"` is set to `
 
 Passing `--report=json` to run-elm makes Elm compilation errors in `stderr` easier to parse.
 Please note that only the last one or two lines in `stderr` may be valid JSON strings because there exist additional messages such as `Error: Compilation failed`.
+
+### Using custom `elm-make` instance
+
+Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `elm-make` instance (e.g. the one installed locally).
+Otherwise, a globally available `elm-make` command is used to compile Elm code.
 
 ### Meta
 

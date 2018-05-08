@@ -25,8 +25,12 @@ import sh from 'shelljs';
     )
     .option(
       '--report [format]',
-      'Format of error and warning reports (e.g. --report=json)',
+      'format of error and warning reports (e.g. --report=json)',
       'normal'
+    )
+    .option(
+      '--path-to-elm-make [path]',
+      'location of `elm-make` binary (if not defined, a globally available `elm-make` is used)'
     )
     .parse(process.argv);
 
@@ -41,6 +45,7 @@ import sh from 'shelljs';
   const outputName = program.outputName;
   const rawProjectDir = program.projectDir;
   const reportFormat = program.report;
+  const pathToElmMake = program.pathToElmMake;
   const argsToOutput = program.args.slice(1);
 
   // extract key paths
@@ -58,8 +63,8 @@ import sh from 'shelljs';
 
   let exitCode = 0;
   try {
-    // ensure elm is installed
-    if (!sh.which('elm')) {
+    // ensure global elm is installed (unless pathToElmMake is given)
+    if (!pathToElmMake && !sh.which('elm')) {
       throw new Error('No elm global binary available. Please install with `npm install -g elm`.');
     }
 
@@ -93,8 +98,8 @@ import sh from 'shelljs';
     } catch (err) {
       throw new Error(`Provided --project-dir \`${rawProjectDir}\` is not a directory.`);
     }
-    if (userModulePath.indexOf(`${projectDir}/`) !== 0) {
-      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${rawProjectDir}\``);
+    if (!userModulePath.startsWith(`${projectDir}${path.sep}`)) {
+      throw new Error(`File \`${userModulePath}\` must be located within --project-dir \`${projectDir}\``);
     }
 
     // ensure report format is adequate
@@ -135,6 +140,7 @@ import sh from 'shelljs';
     const contents = await compileToString([mainModuleFilename], {
       yes: true,
       report: reportFormat,
+      pathToMake: pathToElmMake,
     });
     await writeFile(outputCompiledFilename, contents);
 
