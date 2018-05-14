@@ -1,4 +1,4 @@
-import { stat, readFile, writeFile, unlink, openSync, exists } from 'fs-extra';
+import { stat, readFile, writeFile, unlink, open, close, exists } from 'fs-extra';
 import { compileSync } from 'node-elm-compiler';
 import sh from 'shelljs';
 import path from 'path';
@@ -23,8 +23,11 @@ export default async (userModuleFileName, {
     : path.resolve(path.dirname(userModulePath)));
   const mainModuleFilename = path.join(resolvedProjectDir, `${mainModule}.elm`);
   const outputCompiledFilename = path.join(resolvedProjectDir, `run-elm-main-${moduleId}.js`);
+
   const elmCompileStdout = path.join(resolvedProjectDir, `stdout-${moduleId}.txt`);
   const elmCompileStderr = path.join(resolvedProjectDir, `stderr-${moduleId}.txt`);
+  let elmCompileStdoutFd;
+  let elmCompileStderrFd;
 
   try {
     // ensure global elm is installed (unless pathToElmMake is given)
@@ -101,13 +104,15 @@ export default async (userModuleFileName, {
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
+    [elmCompileStdoutFd, elmCompileStderrFd] = await Promise.all([open(elmCompileStdout, 'w'), open(elmCompileStderr, 'w')]);
+
     compileSync([mainModuleFilename], {
       yes: true,
       report,
       pathToMake: pathToElmMake,
       output: outputCompiledFilename,
       processOpts: {
-        stdio: [0, openSync(elmCompileStdout, 'w'), openSync(elmCompileStderr, 'w')]
+        stdio: [0, elmCompileStdoutFd, elmCompileStderrFd]
       }
     });
     if (!await exists(outputCompiledFilename)) {
@@ -144,6 +149,10 @@ export default async (userModuleFileName, {
     throw err;
   } finally {
     // cleanup
+    await Promise.all([
+      close(elmCompileStdoutFd).catch(() => {}),
+      close(elmCompileStderrFd).catch(() => {}),
+    ]);
     await Promise.all([
       unlink(mainModuleFilename).catch(() => {}),
       unlink(outputCompiledFilename).catch(() => {}),
