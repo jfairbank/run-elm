@@ -6,13 +6,11 @@ import listIntegrationTests from './list';
 
 const runElmPath = resolve(__dirname, '../../lib/cli.js');
 
-beforeAll(() => {
+describe('run-elm cli', () => {
   if (!sh.which('elm')) {
     throw new Error('Cannot run tests because elm is not installed globally');
   }
-});
 
-describe('run-elm cli', () => {
   listIntegrationTests().forEach(({
     projectName,
     projectDir,
