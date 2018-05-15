@@ -11,6 +11,8 @@ beforeAll(() => {
 });
 
 const standardConsoleLog = console.log;
+const standardConsoleError = console.error;
+const standardProcessExit = process.exit;
 
 describe('run-elm function', () => {
   listIntegrationTests().forEach(({
@@ -45,6 +47,8 @@ describe('run-elm function', () => {
       }
 
       expect(console.log).toBe(standardConsoleLog);
+      expect(console.error).toBe(standardConsoleError);
+      expect(process.exit).toBe(standardProcessExit);
 
       if (expectedExitCode === 0) {
         expect(typeof result.output).toBe('string');

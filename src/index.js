@@ -1,8 +1,10 @@
 import { stat, readFile, writeFile, unlink, open, close, exists } from 'fs-extra';
-import { compileSync } from 'node-elm-compiler';
+import { compile } from 'node-elm-compiler';
 import sh from 'shelljs';
 import path from 'path';
 import defaultOptions from './defaultOptions';
+
+const noop = () => {};
 
 export default async (userModuleFileName, {
   outputName = defaultOptions.outputName,
@@ -104,17 +106,31 @@ export default async (userModuleFileName, {
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
+    // need to fake standard methods due to https://github.com/rtfeldman/node-elm-compiler/issues/68
     [elmCompileStdoutFd, elmCompileStderrFd] = await Promise.all([open(elmCompileStdout, 'w'), open(elmCompileStderr, 'w')]);
+    const originalProcessExit = process.exit;
+    const originalConsoleError = console.error;
+    process.exit = noop;
+    console.error = noop;
+    try {
+      await new Promise((resolve) => {
+        compile([mainModuleFilename], {
+          yes: true,
+          report,
+          pathToMake: pathToElmMake,
+          output: outputCompiledFilename,
+          processOpts: {
+            stdio: [0, elmCompileStdoutFd, elmCompileStderrFd]
+          }
+        }).on('close', resolve);
+      });
+    } catch (e) {
+      // catching Error: spawn EACCES when path-to-elm-make is a directory
+      // (no action needed)
+    }
+    process.exit = originalProcessExit;
+    console.error = originalConsoleError;
 
-    compileSync([mainModuleFilename], {
-      yes: true,
-      report,
-      pathToMake: pathToElmMake,
-      output: outputCompiledFilename,
-      processOpts: {
-        stdio: [0, elmCompileStdoutFd, elmCompileStderrFd]
-      }
-    });
     if (!await exists(outputCompiledFilename)) {
       const errorMessage = `Compilation failed\n${await readFile(elmCompileStderr, 'utf8')}${await readFile(elmCompileStdout, 'utf8')}`;
       throw new Error(errorMessage);
@@ -125,7 +141,7 @@ export default async (userModuleFileName, {
       output: '',
       debugLog: [],
     };
-    const standardConsoleLog = console.log;
+    const originalConsoleLog = console.log;
     console.log = (...args) => result.debugLog.push(args.join(' '));
     await new Promise((resolve) => {
       const { worker } = require(outputCompiledFilename)[mainModule];
@@ -135,7 +151,7 @@ export default async (userModuleFileName, {
         resolve();
       });
     });
-    console.log = standardConsoleLog;
+    console.log = originalConsoleLog;
     return result;
   } catch (err) {
     // handle error
@@ -158,14 +174,14 @@ export default async (userModuleFileName, {
   } finally {
     // cleanup
     await Promise.all([
-      close(elmCompileStdoutFd).catch(() => {}),
-      close(elmCompileStderrFd).catch(() => {}),
+      close(elmCompileStdoutFd).catch(noop),
+      close(elmCompileStderrFd).catch(noop),
     ]);
     await Promise.all([
-      unlink(mainModuleFilename).catch(() => {}),
-      unlink(outputCompiledFilename).catch(() => {}),
-      unlink(elmCompileStdout).catch(() => {}),
-      unlink(elmCompileStderr).catch(() => {}),
+      unlink(mainModuleFilename).catch(noop),
+      unlink(outputCompiledFilename).catch(noop),
+      unlink(elmCompileStdout).catch(noop),
+      unlink(elmCompileStderr).catch(noop),
     ]);
   }
 };
