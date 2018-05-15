@@ -1,4 +1,4 @@
-import { execFile } from 'child-process-promise';
+import execa from 'execa';
 import { remove } from 'fs-extra';
 import { resolve } from 'path';
 import sh from 'shelljs';
@@ -27,9 +27,10 @@ describe('run-elm cli', () => {
         if (cleanElmStuff) {
           await remove(resolve(projectDir, 'elm-stuff'));
         }
-        result = await execFile(runElmPath, cliArgs, {
+        result = await execa(runElmPath, cliArgs, {
           cwd: projectDir,
-          maxBuffer: 1024 * 1024 * 100
+          maxBuffer: 1024 * 1024 * 100,
+          stripEof: false,
         });
       } catch (e) {
         result = e;
