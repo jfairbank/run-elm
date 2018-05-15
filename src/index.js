@@ -121,15 +121,21 @@ export default async (userModuleFileName, {
     }
 
     // run compiled elm file
-    let result;
+    const result = {
+      output: '',
+      debugLog: [],
+    };
+    const standardConsoleLog = console.log;
+    console.log = (...args) => result.debugLog.push(args.join(' '));
     await new Promise((resolve) => {
       const { worker } = require(outputCompiledFilename)[mainModule];
       const app = needArgs ? worker(argsToOutput) : worker();
       app.ports.sendOutput.subscribe((output) => {
-        result = output;
+        result.output = output;
         resolve();
       });
     });
+    console.log = standardConsoleLog;
     return result;
   } catch (err) {
     // handle error

@@ -10,6 +10,8 @@ beforeAll(() => {
   }
 });
 
+const standardConsoleLog = console.log;
+
 describe('run-elm function', () => {
   listIntegrationTests().forEach(({
     projectName,
@@ -41,15 +43,20 @@ describe('run-elm function', () => {
       } catch (e) {
         result = e;
       }
+
+      expect(console.log).toBe(standardConsoleLog);
+
       if (expectedExitCode === 0) {
-        expect(typeof result).toBe('string');
+        expect(typeof result.output).toBe('string');
+        expect(result.debugLog).toBeInstanceOf(Array);
+        const stdOut = `${result.debugLog.length ? `${result.debugLog.join('\n')}\n` : ''}${result.output}`;
 
         // when long output is expected, it is cheaper to check its length first
         if (typeof expectedStdout === 'string') {
           if (expectedStdout.length > 10000) {
-            expect(result.length).toEqual(expectedStdout.length);
+            expect(stdOut.length).toEqual(expectedStdout.length);
           }
-          expect(result).toEqual(expectedStdout);
+          expect(stdOut).toEqual(expectedStdout);
         }
       } else {
         expect(result).toBeInstanceOf(Error);

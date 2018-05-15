@@ -138,13 +138,18 @@ import runElm from 'run-elm';
 // const runElm = require('run-elm').default;
 
 (async () => {
-  const result1 = await runElm('path/to/Main.elm');
+  const { output, debugLog } = await runElm('path/to/Main.elm');
+  // output: string
+  // debugLog: string[]
 
-  const result2 = await runElm('/path/to/project/subdirectory/Custom.elm', {
-    outputName: 'customOutput',
-    projectDir: '/path/to/project',
-    report: 'json',
-    pathToElmMake: '/path/to/elm-make'
-  });
+  const anotherRunElmResult = await runElm(
+    '/path/to/project/subdirectory/Custom.elm',
+    {
+      outputName: 'customOutput',
+      projectDir: '/path/to/project',
+      report: 'json',
+      pathToElmMake: '/path/to/elm-make'
+    }
+  );
 })();
 ```

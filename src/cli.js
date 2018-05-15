@@ -40,14 +40,17 @@ import defaultOptions from './defaultOptions';
   }
 
   try {
-    const result = await runElm(program.args[0], {
+    const { debugLog, output } = await runElm(program.args[0], {
       outputName: program.outputName,
       projectDir: program.projectDir,
       report: program.report,
       pathToElmMake: program.pathToElmMake,
       argsToOutput: program.args.slice(1),
     });
-    console.log(result);
+    if (debugLog.length) {
+      console.log(debugLog.join('\n'));
+    }
+    console.log(output);
   } catch (e) {
     console.error('Error:', e.message);
     if (e.stack && process.env.DEBUG) {
