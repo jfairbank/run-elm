@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = [{
   title: 'report=hello',
   functionArgs: ['Main.elm', { report: 'hello' }],
@@ -25,19 +27,19 @@ module.exports = [{
   cliArgs: ['Main.elm', '--project-dir=/42'],
   expectedExitCode: 1,
   expectedStdout: '',
-  expectedStderr: 'Error: Provided project dir `/42` is not a directory.\n',
+  expectedStderr: `Error: Provided project dir \`${path.resolve('/42')}\` is not a directory.\n`,
 }, {
   title: 'non-existing module',
   functionArgs: ['NonExisting.elm'],
   cliArgs: ['NonExisting.elm'],
   expectedExitCode: 1,
   expectedStdout: '',
-  expectedStderr: () => `Error: File \`${__dirname}/NonExisting.elm\` does not exist.\n`,
+  expectedStderr: () => `Error: File \`${path.resolve(__dirname, 'NonExisting.elm')}\` does not exist.\n`,
 }, {
   title: 'non-elm file',
   functionArgs: ['test-config.js'],
   cliArgs: ['test-config.js'],
   expectedExitCode: 1,
   expectedStdout: '',
-  expectedStderr: () => `Error: File \`${__dirname}/test-config.js\` should have .elm file extension.\n`,
+  expectedStderr: () => `Error: File \`${path.resolve(__dirname, 'test-config.js')}\` should have .elm file extension.\n`,
 }];

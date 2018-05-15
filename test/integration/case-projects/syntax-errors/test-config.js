@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = [{
   title: 'report=normal (implicit, cold start)',
   functionArgs: ['Main.elm'],
@@ -37,7 +39,7 @@ Detected errors in 1 module.
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- ././Main.elm
+-- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
 
 It looks like the keyword \`module\` is being used as a variable.
 
@@ -55,7 +57,7 @@ Detected errors in 1 module.
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- ././Main.elm
+-- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
 
 It looks like the keyword \`module\` is being used as a variable.
 
@@ -72,7 +74,11 @@ Detected errors in 1 module.
   cliArgs: ['Main.elm', '--report=json'],
   expectedExitCode: 1,
   expectedStdout: '',
-  expectedStderr: `Error: Compilation failed
+  expectedStderr: process.platform === 'win32'
+    ? `Error: Compilation failed
+[{"subregion":null,"details":"Rename it to something else.","region":{"end":{"column":25,"line":4},"start":{"column":25,"line":4}},"type":"error","file":".\\\\.\\\\Main.elm","tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable."}]
+
+` : `Error: Compilation failed
 [{"tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable.","subregion":null,"details":"Rename it to something else.","region":{"start":{"line":4,"column":25},"end":{"line":4,"column":25}},"type":"error","file":"././Main.elm"}]
 
 `,

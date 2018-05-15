@@ -1,8 +1,8 @@
-module Aux exposing (..)
+module Helper exposing (..)
 
 import Extra exposing (extra)
 
 
-aux : String
-aux =
+helper : String
+helper =
     "static output " ++ extra
