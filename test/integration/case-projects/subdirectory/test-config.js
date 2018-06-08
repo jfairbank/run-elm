@@ -1,5 +1,6 @@
 module.exports = [{
-  args: ['--project-dir=.', 'src/Main.elm'],
+  functionArgs: ['src/Main.elm', { projectDir: __dirname }],
+  cliArgs: ['--project-dir=.', 'src/Main.elm'],
   expectedStdout: 'static output from subdirectory\n',
   expectedStderr: '',
 }];

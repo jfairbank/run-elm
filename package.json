@@ -6,18 +6,21 @@
     "lib",
     "README.md"
   ],
+  "main": "lib/index.js",
   "engines": {
     "node": ">=6.0.0"
   },
   "bin": {
-    "run-elm": "lib/index.js"
+    "run-elm": "lib/cli.js"
   },
   "scripts": {
-    "test:clean": "cd test/integration && git clean -d -f -X",
+    "clean:test": "git clean -d -f -X test/integration",
     "lint": "eslint src test --ignore-pattern elm-stuff",
+    "prebuild": "rimraf lib",
+    "build": "babel src --out-dir lib",
+    "postbuild": "cpx \"src/*.elm.template\" lib",
     "pretest": "npm run build",
-    "test": "jest",
-    "build": "babel src --out-dir lib && cpx 'src/*.elm.template' lib",
+    "test": "jest --runInBand",
     "prepublish": "npm run build"
   },
   "repository": {
@@ -40,7 +43,7 @@
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "commander": "^2.13.0",
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^6.0.1",
     "node-elm-compiler": "^4.3.0",
     "shelljs": "^0.7.6"
   },
@@ -48,11 +51,11 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "child-process-promise": "^2.2.1",
     "cpx": "^1.5.0",
     "eslint": "^4.16.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
+    "execa": "^0.10.0",
     "jest": "^22.1.4"
   },
   "jest": {

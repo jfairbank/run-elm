@@ -4,6 +4,10 @@
 
 Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `elm-make` instance (e.g. the one installed locally) ([#13](https://github.com/jfairbank/run-elm/pull/13))
 
+### NEW - Node API interface
+
+It is now possible to execute run-elm via `import` / `require` in addition to spawning a process ([#14](https://github.com/jfairbank/run-elm/pull/14))
+
 ### Other changes
 
 * Add full stops to some error messages for consistency ([#15](https://github.com/jfairbank/run-elm/pull/15))

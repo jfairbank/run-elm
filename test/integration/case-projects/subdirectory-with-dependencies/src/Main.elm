@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Aux exposing (aux)
+import Helper exposing (helper)
 
 
 output : String
 output =
-    aux
+    helper

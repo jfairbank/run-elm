@@ -1,5 +1,6 @@
 module.exports = [{
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   expectedStdout: () => 'static output\n'.repeat(1000000),
   expectedStderr: '',
 }];

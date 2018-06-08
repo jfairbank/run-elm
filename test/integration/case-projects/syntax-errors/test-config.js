@@ -1,6 +1,9 @@
+const path = require('path');
+
 module.exports = [{
   title: 'report=normal (implicit, cold start)',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   cleanElmStuff: true,
   expectedStdout: '',
   expectedExitCode: 1,
@@ -31,11 +34,12 @@ Detected errors in 1 module.
 
 }, {
   title: 'report=normal (implicit)',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- ././Main.elm
+-- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
 
 It looks like the keyword \`module\` is being used as a variable.
 
@@ -48,11 +52,12 @@ Detected errors in 1 module.
 `,
 }, {
   title: 'report=normal (explicit)',
-  args: ['Main.elm', '--report=normal'],
+  functionArgs: ['Main.elm', { report: 'normal' }],
+  cliArgs: ['Main.elm', '--report=normal'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- ././Main.elm
+-- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
 
 It looks like the keyword \`module\` is being used as a variable.
 
@@ -65,10 +70,15 @@ Detected errors in 1 module.
 `,
 }, {
   title: 'report=json',
-  args: ['Main.elm', '--report=json'],
+  functionArgs: ['Main.elm', { report: 'json' }],
+  cliArgs: ['Main.elm', '--report=json'],
   expectedExitCode: 1,
   expectedStdout: '',
-  expectedStderr: `Error: Compilation failed
+  expectedStderr: process.platform === 'win32'
+    ? `Error: Compilation failed
+[{"subregion":null,"details":"Rename it to something else.","region":{"end":{"column":25,"line":4},"start":{"column":25,"line":4}},"type":"error","file":".\\\\.\\\\Main.elm","tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable."}]
+
+` : `Error: Compilation failed
 [{"tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable.","subregion":null,"details":"Rename it to something else.","region":{"start":{"line":4,"column":25},"end":{"line":4,"column":25}},"type":"error","file":"././Main.elm"}]
 
 `,

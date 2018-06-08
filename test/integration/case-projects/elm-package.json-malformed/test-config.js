@@ -1,6 +1,7 @@
 module.exports = [{
   title: 'default',
-  args: ['Main.elm'],
+  functionArgs: ['Main.elm'],
+  cliArgs: ['Main.elm'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
@@ -17,7 +18,8 @@ You can also check out the following example to see what it should look like:
 `,
 }, {
   title: 'report=json',
-  args: ['Main.elm', '--report=json'],
+  functionArgs: ['Main.elm', { report: 'json' }],
+  cliArgs: ['Main.elm', '--report=json'],
   expectedExitCode: 1,
   expectedStdout: '',
   expectedStderr: `Error: Compilation failed
