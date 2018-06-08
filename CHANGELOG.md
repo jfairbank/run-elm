@@ -6,7 +6,29 @@ Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `el
 
 ### NEW - Node API interface
 
-It is now possible to execute run-elm via `import` / `require` in addition to spawning a process ([#14](https://github.com/jfairbank/run-elm/pull/14))
+You can now import run-elm in a Node app and run it directly instead of spawning a process ([#14](https://github.com/jfairbank/run-elm/pull/14))
+
+```js
+import runElm from 'run-elm';
+// or
+// const runElm = require('run-elm').default;
+
+(async () => {
+  const { output, debugLog } = await runElm('path/to/Main.elm');
+  // output: string
+  // debugLog: string[]
+
+  const anotherRunElmResult = await runElm(
+    '/path/to/project/subdirectory/Custom.elm',
+    {
+      outputName: 'customOutput',
+      projectDir: '/path/to/project',
+      report: 'json',
+      pathToElmMake: '/path/to/elm-make'
+    }
+  );
+})();
+```
 
 ### Other changes
 
