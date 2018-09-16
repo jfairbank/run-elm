@@ -10,7 +10,7 @@ module.exports = [{
   // do not check stderr as it is unstable (order of downloads changes)
   // approximate stdout:
 
-/*
+  /*
 
 Error: Compilation failed
 Starting downloads...

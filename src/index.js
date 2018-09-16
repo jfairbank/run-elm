@@ -1,4 +1,6 @@
-import { stat, readFile, writeFile, unlink, open, close, exists } from 'fs-extra';
+import {
+  stat, readFile, writeFile, unlink, open, close, exists
+} from 'fs-extra';
 import { compile } from 'node-elm-compiler';
 import sh from 'shelljs';
 import path from 'path';
