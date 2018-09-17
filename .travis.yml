@@ -8,7 +8,6 @@ language: node_js
 node_js:
   - "6"
   - "8"
-  - "9"
   - "10"
 
 # Credit https://github.com/rtfeldman/elm-css/blob/master/.travis.yml
