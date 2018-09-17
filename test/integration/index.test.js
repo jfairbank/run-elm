@@ -65,6 +65,8 @@ describe('run-elm function', () => {
             expect(result.message.length).toEqual(expectedError.length);
           }
           expect(result.message).toEqual(expectedError);
+        } else if (expectedError instanceof RegExp) {
+          expect(result.message).toMatch(expectedError);
         }
       }
     }, 30000);
