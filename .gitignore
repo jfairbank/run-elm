@@ -8,9 +8,9 @@ yarn-error.log
 
 # test-related-stuff
 coverage/
-test/**/elm-package.json
 test/**/RunElmMain*
+test/**/run-elm-main-*.js
 test/**/stdout-*.txt
 test/**/stderr-*.txt
-!test/integration/case-projects/elm-package*/elm-package.json
-!test/integration/case-projects/subdirectory*/elm-package.json
+!test/integration/case-projects/elm.json*/elm.json
+!test/integration/case-projects/subdirectory*/elm.json

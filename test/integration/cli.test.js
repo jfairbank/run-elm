@@ -17,8 +17,8 @@ describe('run-elm cli', () => {
     cliArgs,
     cleanElmStuff,
     expectedExitCode,
-    expectedStdout,
-    expectedStderr,
+    expectedOutput,
+    expectedError,
     title,
   }) => {
     test(`correctly works for case project \`${projectName}\`${title ? ` → ${title}` : ''}`, async () => {
@@ -30,7 +30,6 @@ describe('run-elm cli', () => {
         result = await execa(runElmPath, cliArgs, {
           cwd: projectDir,
           maxBuffer: 1024 * 1024 * 100,
-          stripEof: false,
         });
       } catch (e) {
         result = e;
@@ -38,18 +37,18 @@ describe('run-elm cli', () => {
       expect(result.code || 0).toEqual(expectedExitCode);
 
       // when long output is expected, it is cheaper to check its length first
-      if (typeof expectedStdout === 'string') {
-        if (expectedStdout.length > 10000) {
-          expect(result.stdout.length).toEqual(expectedStdout.length);
+      if (typeof expectedOutput === 'string') {
+        if (expectedOutput.length > 10000) {
+          expect(result.stdout.length).toEqual(expectedOutput.length);
         }
-        expect(result.stdout).toEqual(expectedStdout);
+        expect(result.stdout).toEqual(expectedOutput);
       }
 
-      if (typeof expectedStderr === 'string') {
-        if (expectedStderr.length > 10000) {
-          expect(result.stderr.length).toEqual(expectedStderr.length);
+      if (typeof expectedError === 'string') {
+        if (expectedError.length > 10000) {
+          expect(result.stderr.length - 1).toEqual(expectedError.length);
         }
-        expect(result.stderr).toEqual(expectedStderr);
+        expect(result.stderr.replace(/\n$/, '')).toEqual(expectedError);
       }
     }, 30000);
   });

@@ -52,7 +52,7 @@ import defaultOptions from './defaultOptions';
     }
     console.log(output);
   } catch (e) {
-    console.error('Error:', e.message);
+    console.error(e.message);
     if (e.stack && process.env.DEBUG) {
       console.error(e.stack.substring(e.toString().length + 1));
     }

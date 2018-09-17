@@ -1,14 +1,16 @@
-module.exports = [{
-  title: 'Debug.log (single)',
-  functionArgs: ['DebugLogSingle.elm'],
-  cliArgs: ['DebugLogSingle.elm'],
-  expectedStdout: 'Debugging: "hello world"\nhello world\n',
-  expectedStderr: '',
-}, {
-  title: 'Debug.log (multiple)',
-  functionArgs: ['DebugLogMultiple.elm'],
-  cliArgs: ['DebugLogMultiple.elm'],
-  expectedStdout: `value: 1
+module.exports = [
+  {
+    title: 'Debug.log (single)',
+    functionArgs: ['DebugLogSingle.elm'],
+    cliArgs: ['DebugLogSingle.elm'],
+    expectedOutput: 'Debugging: "hello world"\nhello world',
+    expectedError: ''
+  },
+  {
+    title: 'Debug.log (multiple)',
+    functionArgs: ['DebugLogMultiple.elm'],
+    cliArgs: ['DebugLogMultiple.elm'],
+    expectedOutput: `value: 1
 for n: 1
 value: 1
 for n: 2
@@ -28,7 +30,7 @@ value: 40320
 for n: 9
 value: 362880
 for n: 10
-3628800
-`,
-  expectedStderr: '',
-}];
+3628800`,
+    expectedError: ''
+  }
+];

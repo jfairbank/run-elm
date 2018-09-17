@@ -12,4 +12,4 @@ factorial n =
 
 output : String
 output =
-    toString <| factorial 10
+    String.fromInt <| factorial 10

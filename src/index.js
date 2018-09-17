@@ -1,7 +1,7 @@
 import {
-  stat, readFile, writeFile, unlink, open, close, exists
+  stat, readFile, writeFile, unlink
 } from 'fs-extra';
-import { compile } from 'node-elm-compiler';
+import { compileToString } from 'node-elm-compiler';
 import sh from 'shelljs';
 import path from 'path';
 import defaultOptions from './defaultOptions';
@@ -12,7 +12,7 @@ export default async (userModuleFileName, {
   outputName = defaultOptions.outputName,
   projectDir,
   report = defaultOptions.report,
-  pathToElmMake,
+  pathToElm,
   argsToOutput = [],
 } = {}) => {
   // extract key paths
@@ -26,16 +26,13 @@ export default async (userModuleFileName, {
     ? path.resolve(projectDir)
     : path.resolve(path.dirname(userModulePath)));
   const mainModuleFilename = path.join(resolvedProjectDir, `${mainModule}.elm`);
-  const outputCompiledFilename = path.join(resolvedProjectDir, `run-elm-main-${moduleId}.js`);
 
-  const elmCompileStdout = path.join(resolvedProjectDir, `stdout-${moduleId}.txt`);
-  const elmCompileStderr = path.join(resolvedProjectDir, `stderr-${moduleId}.txt`);
-  let elmCompileStdoutFd;
-  let elmCompileStderrFd;
+  const originalConsoleLog = console.log;
+  const originalConsoleWarn = console.warn;
 
   try {
-    // ensure global elm is installed (unless pathToElmMake is given)
-    if (!pathToElmMake && !sh.which('elm')) {
+    // ensure global elm is installed (unless pathToElm is given)
+    if (!pathToElm && !sh.which('elm')) {
       throw new Error('No elm global binary available. Please install with `npm install -g elm`.');
     }
 
@@ -43,7 +40,7 @@ export default async (userModuleFileName, {
     if (!outputName.match(/^[a-z_]\w*$/)) {
       throw new Error(`Provided output name \`${outputName}\` is not a valid constant or function name in elm.`);
     }
-    if (['init', 'main', 'program', 'sendOutput'].includes(outputName)) {
+    if (['init', 'main', 'program', 'sendOutput', 'worker'].includes(outputName)) {
       throw new Error(`It is not allowed to use \`${outputName}\` as a value for output name. Please rename the symbol you would like to output.`);
     }
 
@@ -108,52 +105,49 @@ export default async (userModuleFileName, {
     await writeFile(mainModuleFilename, mainModuleContents, 'utf-8');
 
     // compile main module
-    // need to fake standard methods due to https://github.com/rtfeldman/node-elm-compiler/issues/68
-    [elmCompileStdoutFd, elmCompileStderrFd] = await Promise.all([open(elmCompileStdout, 'w'), open(elmCompileStderr, 'w')]);
-    const originalProcessExit = process.exit;
-    const originalConsoleError = console.error;
-    process.exit = noop;
-    console.error = noop;
-    try {
-      await new Promise((resolve) => {
-        compile([mainModuleFilename], {
-          yes: true,
-          report,
-          pathToMake: pathToElmMake,
-          output: outputCompiledFilename,
-          processOpts: {
-            stdio: [0, elmCompileStdoutFd, elmCompileStderrFd]
-          }
-        }).on('close', resolve);
-      });
-    } catch (e) {
-      // catching Error: spawn EACCES when path-to-elm-make is a directory
+    const compileOptions = {
+      pathToElm,
+    };
+    // console.log("REEEP", report);
+    if (report === 'json') {
+      compileOptions.report = report;
+    }
+    // let mainModuleJsCode;
+    // try {
+    const mainModuleJsCode = (await compileToString([mainModuleFilename], compileOptions))
+      .toString();
+    // } catch (e) {
+    //   throw e;
+      // catching Error: spawn EACCES when pathToElm is wrong
       // (no action needed)
-    }
-    process.exit = originalProcessExit;
-    console.error = originalConsoleError;
-
-    if (!await exists(outputCompiledFilename)) {
-      const errorMessage = `Compilation failed\n${await readFile(elmCompileStderr, 'utf8')}${await readFile(elmCompileStdout, 'utf8')}`;
-      throw new Error(errorMessage);
-    }
+    // }
 
     // run compiled elm file
     const result = {
       output: '',
       debugLog: [],
     };
-    const originalConsoleLog = console.log;
+
+    // Collect Debug.log messages
     console.log = (...args) => result.debugLog.push(args.join(' '));
+
+    // Disable "Compiled in DEV mode" warning in stdout
+    console.warn = noop;
+
     await new Promise((resolve) => {
-      const { worker } = require(outputCompiledFilename)[mainModule];
-      const app = needArgs ? worker(argsToOutput) : worker();
+      // Evaluate mainModuleJsCode by passing evalContext to it as 'this'.
+      // Without this trick, tests fail as 'this' is undefined.
+      const evalContext = {};
+
+      // eslint-disable-next-line no-eval,func-names
+      (function () { return eval(mainModuleJsCode); }).call(evalContext);
+      const worker = evalContext.Elm[mainModule];
+      const app = needArgs ? worker.init({ flags: argsToOutput }) : worker.init();
       app.ports.sendOutput.subscribe((output) => {
         result.output = output;
         resolve();
       });
     });
-    console.log = originalConsoleLog;
     return result;
   } catch (err) {
     // handle error
@@ -162,7 +156,7 @@ export default async (userModuleFileName, {
       if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
-        message = `Elm file \`${userModulePath}\` cannot be reached from project dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm-package.json?`;
+        message = `Elm file \`${userModulePath}\` cannot be reached from project dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm.json?`;
       } else {
         message = err.message;
       }
@@ -175,15 +169,8 @@ export default async (userModuleFileName, {
     throw err;
   } finally {
     // cleanup
-    await Promise.all([
-      close(elmCompileStdoutFd).catch(noop),
-      close(elmCompileStderrFd).catch(noop),
-    ]);
-    await Promise.all([
-      unlink(mainModuleFilename).catch(noop),
-      unlink(outputCompiledFilename).catch(noop),
-      unlink(elmCompileStdout).catch(noop),
-      unlink(elmCompileStderr).catch(noop),
-    ]);
+    console.log = originalConsoleLog;
+    console.warn = originalConsoleWarn;
+    await unlink(mainModuleFilename).catch(noop);
   }
 };

@@ -1,22 +1,20 @@
 port module {mainModule} exposing (..)
 
-import Json.Decode
-import Platform exposing (program)
+import Platform exposing (worker)
 import {userModule} exposing ({output})
 
 
 port sendOutput : String -> Cmd msg
 
 
-init : ( (), Cmd msg )
-init =
+init : () -> ( (), Cmd msg )
+init flags =
     ( (), sendOutput {output} )
 
-
-main : Program Never () msg
 main =
-    Platform.program
+    worker
         { init = init
         , update = \_ model -> ( model, Cmd.none )
         , subscriptions = \_ -> Sub.none
         }
+

@@ -11,6 +11,7 @@ beforeAll(() => {
 });
 
 const standardConsoleLog = console.log;
+const standardConsoleWarn = console.warn;
 const standardConsoleError = console.error;
 const standardProcessExit = process.exit;
 
@@ -21,18 +22,11 @@ describe('run-elm function', () => {
     functionArgs,
     cleanElmStuff,
     expectedExitCode = 0,
-    expectedStdout: untrimmedExpectedStdout,
-    expectedStderr: untrimmedExpectedStderr,
+    expectedOutput,
+    expectedError,
     title,
   }) => {
     test(`correctly works for case project \`${projectName}\`${title ? ` → ${title}` : ''}`, async () => {
-      const expectedStdout = untrimmedExpectedStdout
-        ? untrimmedExpectedStdout.substring(0, untrimmedExpectedStdout.length - 1)
-        : untrimmedExpectedStdout;
-      const expectedStderr = untrimmedExpectedStderr
-        ? untrimmedExpectedStderr.substring(0, untrimmedExpectedStderr.length - 1).replace(/^Error: /, '')
-        : untrimmedExpectedStderr;
-
       const functionArgsWithResolvedModulePath = [
         resolve(projectDir, functionArgs[0]), ...functionArgs.slice(1)
       ];
@@ -47,6 +41,7 @@ describe('run-elm function', () => {
       }
 
       expect(console.log).toBe(standardConsoleLog);
+      expect(console.warn).toBe(standardConsoleWarn);
       expect(console.error).toBe(standardConsoleError);
       expect(process.exit).toBe(standardProcessExit);
 
@@ -56,20 +51,20 @@ describe('run-elm function', () => {
         const stdOut = `${result.debugLog.length ? `${result.debugLog.join('\n')}\n` : ''}${result.output}`;
 
         // when long output is expected, it is cheaper to check its length first
-        if (typeof expectedStdout === 'string') {
-          if (expectedStdout.length > 10000) {
-            expect(stdOut.length).toEqual(expectedStdout.length);
+        if (typeof expectedOutput === 'string') {
+          if (expectedOutput.length > 10000) {
+            expect(stdOut.length).toEqual(expectedOutput.length);
           }
-          expect(stdOut).toEqual(expectedStdout);
+          expect(stdOut).toEqual(expectedOutput);
         }
       } else {
         expect(result).toBeInstanceOf(Error);
 
-        if (typeof expectedStderr === 'string') {
-          if (expectedStderr.length > 10000) {
-            expect(result.message.length).toEqual(expectedStderr.length);
+        if (typeof expectedError === 'string') {
+          if (expectedError.length > 10000) {
+            expect(result.message.length).toEqual(expectedError.length);
           }
-          expect(result.message).toEqual(expectedStderr);
+          expect(result.message).toEqual(expectedError);
         }
       }
     }, 30000);
