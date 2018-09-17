@@ -3,7 +3,7 @@ const homeDir = require('os').homedir();
 const elmDir = process.platform === 'win32'
   ? `${homeDir}\\AppData\\Roaming\\elm`.replace(/\\/g, '\\\\')
   : `${homeDir}/.elm`;
-const elmDirInJson = elmDir.replace(/\\/, '\\\\');
+const elmDirInJson = elmDir.replace(/\\/g, '\\\\');
 
 // The value for elmDir may vary in length, which may affect line endings in error messages.
 // Soft line breaks in regexps are replaced with _ for code readability.
