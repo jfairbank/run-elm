@@ -10,7 +10,3 @@ yarn-error.log
 coverage/
 test/**/RunElmMain*
 test/**/run-elm-main-*.js
-test/**/stdout-*.txt
-test/**/stderr-*.txt
-!test/integration/case-projects/elm.json*/elm.json
-!test/integration/case-projects/subdirectory*/elm.json
