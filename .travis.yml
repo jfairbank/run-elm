@@ -22,7 +22,7 @@ before_install:
       cd ..;
     fi
   - npm i -g elm@0.19
-  - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
-  - printf '%s\n\n' '#!/bin/bash' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old "$@"' > $(npm config get prefix)/bin/elm-make
-  - chmod +x $(npm config get prefix)/bin/elm-make
+  - mv $(npm config get prefix)/bin/elm $(npm config get prefix)/bin/elm-old
+  - printf '%s\n\n' '#!/bin/bash' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-old "$@"' > $(npm config get prefix)/bin/elm
+  - chmod +x $(npm config get prefix)/bin/elm
   - find test -name elm-package.json -exec ./scripts/install_elm_dependencies.sh {} \;
