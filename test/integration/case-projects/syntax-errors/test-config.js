@@ -1,5 +1,19 @@
 const path = require('path');
 
+const normalError = `Compilation failed
+-- PARSE ERROR ------------------------------------------------------ .${path.sep}Main.elm
+
+Something went wrong while parsing hello's type annotation.
+
+3| hello: world
+4| I am a broken Elm module
+   ^
+I was expecting:
+
+  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`
+  - the rest of hello's type annotation. Maybe you forgot some code? Or you need
+    more indentation?`;
+
 module.exports = [
   {
     title: 'report=normal (implicit)',
@@ -7,19 +21,7 @@ module.exports = [
     cliArgs: ['Main.elm'],
     expectedExitCode: 1,
     expectedOutput: '',
-    expectedError: `Compilation failed
--- PARSE ERROR ------------------------------------------------------ .${path.sep}Main.elm
-
-Something went wrong while parsing hello's type annotation.
-
-3| hello: world
-4| I am a broken Elm module
-   ^
-I was expecting:
-
-  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`
-  - the rest of hello's type annotation. Maybe you forgot some code? Or you need
-    more indentation?`
+    expectedError: normalError
   },
   {
     title: 'report=normal (explicit)',
@@ -27,19 +29,7 @@ I was expecting:
     cliArgs: ['Main.elm', '--report=normal'],
     expectedExitCode: 1,
     expectedOutput: '',
-    expectedError: `Compilation failed
--- PARSE ERROR ------------------------------------------------------ .${path.sep}Main.elm
-
-Something went wrong while parsing hello's type annotation.
-
-3| hello: world
-4| I am a broken Elm module
-   ^
-I was expecting:
-
-  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`
-  - the rest of hello's type annotation. Maybe you forgot some code? Or you need
-    more indentation?`
+    expectedError: normalError
   },
   {
     title: 'report=json',
