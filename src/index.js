@@ -157,8 +157,9 @@ export default async (userModuleFileName, {
       if (err.message.match(/Compilation failed/)) {
         message = err.message
           .replace(/\s*\[[= ]+\] - \d+ \/ \d+\s*/, '\n')
+          .replace(/\s*Dependencies loaded from local cache\.\s+Dependencies ready!\s*/, '')
           .replace(/\s*Detected errors in \d+ modules?\.\s*/, '')
-          .replace(/[\r\n]+$/, '');
+          .replace(/\s+$/, '');
       } else if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
