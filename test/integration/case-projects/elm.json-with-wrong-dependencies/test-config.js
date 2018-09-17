@@ -1,5 +1,10 @@
 const homeDir = require('os').homedir();
 
+const elmDir = process.platform === 'win32'
+  ? `${homeDir}\\AppData\\Roaming\\elm`.replace(/\//g, '\\\\')
+  : `${homeDir}/.elm`;
+
+
 module.exports = [
   {
     title: 'default',
@@ -14,7 +19,7 @@ I ran into an unknown package while exploring dependencies:
 
     dev/null
 
-This suggests that your ${homeDir}/.elm directory has been corrupted. Maybe some
+This suggests that your ${elmDir} directory has been corrupted. Maybe some
 program is messing with it? It is just cached files, so you can delete it and
 see if that fixes the issue.`
   },
@@ -25,6 +30,6 @@ see if that fixes the issue.`
     cleanElmStuff: true,
     expectedExitCode: 1,
     expectedError: `Compilation failed
-{"type":"error","path":null,"title":"CORRUPT CACHE","message":["I ran into an unknown package while exploring dependencies:\\n\\n    ",{"bold":false,"underline":false,"color":"yellow","string":"dev/null"},"\\n\\nThis suggests that your ${homeDir}/.elm directory has been corrupted. Maybe some\\nprogram is messing with it? It is just cached files, so you can delete it and\\nsee if that fixes the issue."]}`
+{"type":"error","path":null,"title":"CORRUPT CACHE","message":["I ran into an unknown package while exploring dependencies:\\n\\n    ",{"bold":false,"underline":false,"color":"yellow","string":"dev/null"},"\\n\\nThis suggests that your ${elmDir} directory has been corrupted. Maybe some\\nprogram is messing with it? It is just cached files, so you can delete it and\\nsee if that fixes the issue."]}`
   }
 ];
