@@ -18,9 +18,7 @@ I was expecting:
   - the \`null\` keyword
   - the \`true\` keyword
   - a left square bracket, for starting lists
-  - a left curly brace, for starting records
-
-`
+  - a left curly brace, for starting records`
   },
   {
     title: 'report=json',

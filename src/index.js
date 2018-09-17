@@ -112,6 +112,7 @@ export default async (userModuleFileName, {
     if (report === 'json') {
       compileOptions.report = report;
     }
+
     // let mainModuleJsCode;
     // try {
     const mainModuleJsCode = (await compileToString([mainModuleFilename], compileOptions))
@@ -153,7 +154,12 @@ export default async (userModuleFileName, {
     // handle error
     let message;
     if (typeof err === 'object' && 'message' in err) {
-      if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
+      if (err.message.match(/Compilation failed/)) {
+        message = err.message
+          .replace(/\s*\[[= ]+\] - \d+ \/ \d+\s*/, '\n')
+          .replace(/\s*Detected errors in \d+ modules?\.\s*/, '')
+          .replace(/\n+$/, '');
+      } else if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
         message = `Elm file \`${userModulePath}\` cannot be reached from project dir \`${resolvedProjectDir}\`. Have you configured \`source-directories\` in elm.json?`;
