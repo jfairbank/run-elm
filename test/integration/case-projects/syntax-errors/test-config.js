@@ -38,6 +38,6 @@ module.exports = [
     expectedExitCode: 1,
     expectedOutput: '',
     expectedError: `Compilation failed
-{"type":"compile-errors","errors":[{"path":".${path.sep}Main.elm","name":"Main","problems":[{"title":"PARSE ERROR","region":{"start":{"line":4,"column":1},"end":{"line":4,"column":1}},"message":["Something went wrong while parsing hello's type annotation.\\n\\n3| hello: world\\n4| I am a broken Elm module\\n   ",{"bold":false,"underline":false,"color":"red","string":"^"},"\\nI was expecting:\\n\\n  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`\\n  - the rest of hello's type annotation. Maybe you forgot some code? Or you need\\n    more indentation?"]}]}]}`
+{"type":"compile-errors","errors":[{"path":".${path.sep === '\\' ? '\\\\' : '/'}Main.elm","name":"Main","problems":[{"title":"PARSE ERROR","region":{"start":{"line":4,"column":1},"end":{"line":4,"column":1}},"message":["Something went wrong while parsing hello's type annotation.\\n\\n3| hello: world\\n4| I am a broken Elm module\\n   ",{"bold":false,"underline":false,"color":"red","string":"^"},"\\nI was expecting:\\n\\n  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`\\n  - the rest of hello's type annotation. Maybe you forgot some code? Or you need\\n    more indentation?"]}]}]}`
   }
 ];

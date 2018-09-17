@@ -1,7 +1,7 @@
 const homeDir = require('os').homedir();
 
 const elmDir = process.platform === 'win32'
-  ? `${homeDir}\\AppData\\Roaming\\elm`.replace(/\//g, '\\\\')
+  ? `${homeDir}\\AppData\\Roaming\\elm`.replace(/\\/g, '\\\\')
   : `${homeDir}/.elm`;
 
 // The value for elmDir may vary in length, which may affect line endings in error messages.
