@@ -48,7 +48,7 @@ describe('run-elm cli', () => {
         if (expectedError.length > 10000) {
           expect(result.stderr.length - 1).toEqual(expectedError.length);
         }
-        expect(result.stderr.replace(/\n$/, '')).toEqual(expectedError);
+        expect(result.stderr.replace(/\r?\n$/, '')).toEqual(expectedError);
       }
     }, 30000);
   });

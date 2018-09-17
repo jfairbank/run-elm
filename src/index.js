@@ -158,7 +158,7 @@ export default async (userModuleFileName, {
         message = err.message
           .replace(/\s*\[[= ]+\] - \d+ \/ \d+\s*/, '\n')
           .replace(/\s*Detected errors in \d+ modules?\.\s*/, '')
-          .replace(/\n+$/, '');
+          .replace(/[\r\n]+$/, '');
       } else if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {
         message = `Elm file \`${userModulePath}\` does not define \`${outputName}\`.`;
       } else if (err.message.indexOf(`I cannot find module '${userModule}'`) !== -1) {
