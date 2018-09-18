@@ -165,7 +165,7 @@ export default async (userModuleFileName, {
       message = err;
     }
     err.message = message && process.platform === 'win32'
-      ? message.replace(/\r\n/g, '\n')
+      ? message.replace(/\r\n/g, '\n').replace(/\r/g, ' ')
       : message;
     throw err;
   } finally {
