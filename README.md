@@ -118,10 +118,10 @@ However, the command will likely fail because `"source-directories"` is set to `
 Passing `--report=json` to run-elm makes Elm compilation errors in `stderr` easier to parse.
 Please note that only the last one or two lines in `stderr` may be valid JSON strings because there exist additional messages such as `Error: Compilation failed`.
 
-### Using custom `elm-make` instance
+### Using custom `elm` instance
 
-Passing `--path-to-elm-make=/path/to/elm-make` allows you to choose a custom `elm-make` instance (e.g. the one installed locally).
-Otherwise, a globally available `elm-make` command is used to compile Elm code.
+Passing `--path-to-elm=/path/to/elm` allows you to choose a custom `elm` instance (e.g. the one installed locally).
+Otherwise, a globally available `elm` command is used to compile Elm code.
 
 ### Meta
 
@@ -149,7 +149,7 @@ import runElm from 'run-elm';
       outputName: 'customOutput',
       projectDir: '/path/to/project',
       report: 'json',
-      pathToElmMake: '/path/to/elm-make'
+      pathToElm: '/path/to/elm'
     }
   );
 })();
