@@ -107,21 +107,11 @@ export default async (userModuleFileName, {
     // compile main module
     const compileOptions = {
       pathToElm,
+      report: report === 'normal' ? undefined : report
     };
-    // console.log("REEEP", report);
-    if (report === 'json') {
-      compileOptions.report = report;
-    }
 
-    // let mainModuleJsCode;
-    // try {
     const mainModuleJsCode = (await compileToString([mainModuleFilename], compileOptions))
       .toString();
-    // } catch (e) {
-    //   throw e;
-      // catching Error: spawn EACCES when pathToElm is wrong
-      // (no action needed)
-    // }
 
     // run compiled elm file
     const result = {
