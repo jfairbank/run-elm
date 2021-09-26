@@ -40,11 +40,12 @@ import defaultOptions from './defaultOptions';
   }
 
   try {
+    const options = program.opts();
     const { debugLog, output } = await runElm(program.args[0], {
-      outputName: program.outputName,
-      projectDir: program.projectDir,
-      report: program.report,
-      pathToElmMake: program.pathToElmMake,
+      outputName: options.outputName,
+      projectDir: options.projectDir,
+      report: options.report,
+      pathToElmMake: options.pathToElmMake,
       argsToOutput: program.args.slice(1),
     });
     if (debugLog.length) {

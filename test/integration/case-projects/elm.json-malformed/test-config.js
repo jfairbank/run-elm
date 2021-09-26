@@ -5,20 +5,11 @@ module.exports = [
     cliArgs: ['Main.elm'],
     expectedExitCode: 1,
     expectedOutput: '',
-    expectedError: `Compilation failed
--- BAD JSON ----------------------------------------------------------- elm.json
+    expectedError: new RegExp(`Compilation failed
+-- EXPECTING A VALUE -------------------------------------------------- elm.json
 
-Something went wrong while parsing your code.
-
-1| oops
-   ^
-I was expecting:
-
-  - the \`false\` keyword
-  - the \`null\` keyword
-  - the \`true\` keyword
-  - a left square bracket, for starting lists
-  - a left curly brace, for starting records`
+I ran into a problem with your elm.json file. I was expecting to see a JSON
+value next:\\s*elm: Prelude.last: empty list`) // Spacing after "value next:" is unstable. Looks like an upstream issue in Elm 0.19.1.
   },
   {
     title: 'report=json',
@@ -27,6 +18,6 @@ I was expecting:
     expectedExitCode: 1,
     expectedOutput: '',
     expectedError:
-      'Compilation failed\n{"type":"error","path":"elm.json","title":"BAD JSON","message":["Something went wrong while parsing your code.\\n\\n1| oops\\n   ",{"bold":false,"underline":false,"color":"red","string":"^"},"\\nI was expecting:\\n\\n  - the `false` keyword\\n  - the `null` keyword\\n  - the `true` keyword\\n  - a left square bracket, for starting lists\\n  - a left curly brace, for starting records"]}'
+      'Compilation failed\nelm: Prelude.last: empty list' // JSON not returned. Looks like an upstream issue in Elm 0.19.1.
   }
 ];

@@ -16,14 +16,17 @@ module.exports = [
     cliArgs: ['Main.elm'],
     cleanElmStuff: true,
     expectedExitCode: 1,
-    expectedError: new RegExp(`Compilation failed
--- CORRUPT CACHE ---------------------------------------------------------------
+    expectedError: `Compilation failed
+-- INCOMPATIBLE DEPENDENCIES ------------------------------------------ elm.json
 
-I ran into an unknown package while exploring dependencies:
+The dependencies in your elm.json are not compatible.
 
-    dev\\/null
+Did you change them by hand? Try to change it back! It is much more reliable to
+add dependencies with elm install or the dependency management tool in
+elm reactor.
 
-This suggests that your ${elmDir}${_}directory${_}has${_}been${_}corrupted.${_}Maybe${_}some${_}program${_}is${_}messing${_}with${_}it\\?${_}It${_}is${_}just${_}cached${_}files,${_}so${_}you${_}can${_}delete${_}it${_}and${_}see${_}if${_}that${_}fixes${_}the${_}issue\\.`)
+Please ask for help on the community forums if you try those paths and are still
+having problems!`
   },
   {
     title: 'report=json',
@@ -31,7 +34,7 @@ This suggests that your ${elmDir}${_}directory${_}has${_}been${_}corrupted.${_}M
     cliArgs: ['Main.elm', '--report=json'],
     cleanElmStuff: true,
     expectedExitCode: 1,
-    expectedError: new RegExp(`^Compilation failed
-{"type":"error","path":null,"title":"CORRUPT CACHE","message":\\["I ran into an unknown package while exploring dependencies:\\\\n\\\\n    ",{"bold":false,"underline":false,"color":"yellow","string":"dev\\/null"},"\\\\n\\\\nThis suggests that your ${elmDirInJson}${_}directory${_}has${_}been${_}corrupted.${_}Maybe${_}some${_}program${_}is${_}messing${_}with${_}it\\?${_}It${_}is${_}just${_}cached${_}files,${_}so${_}you${_}can${_}delete${_}it${_}and${_}see${_}if${_}that${_}fixes${_}the${_}issue\\."\\]}$`)
+    expectedError: `Compilation failed
+{"type":"error","path":"elm.json","title":"INCOMPATIBLE DEPENDENCIES","message":["The dependencies in your elm.json are not compatible.\\n\\nDid you change them by hand? Try to change it back! It is much more reliable to\\nadd dependencies with ",{"bold":false,"underline":false,"color":"GREEN","string":"elm install"}," or the dependency management tool in\\n",{"bold":false,"underline":false,"color":"GREEN","string":"elm reactor"},".\\n\\nPlease ask for help on the community forums if you try those paths and are still\\nhaving problems!"]}`
   }
 ];

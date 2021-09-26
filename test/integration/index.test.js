@@ -69,6 +69,6 @@ describe('run-elm function', () => {
           expect(result.message).toMatch(expectedError);
         }
       }
-    }, 30000);
+    }, 60000);
   });
 });

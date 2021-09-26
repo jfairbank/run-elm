@@ -85,7 +85,7 @@ export default async (userModuleFileName, {
     const argsRegex = new RegExp(`^${outputName} +\\w+ *=`);
     const needArgs = userModuleContents
       .split('\n')
-      .some(line => argsRegex.test(line.trim()));
+      .some((line) => argsRegex.test(line.trim()));
 
     // read main module template
     sh.cd(resolvedProjectDir);
@@ -126,13 +126,7 @@ export default async (userModuleFileName, {
     console.warn = noop;
 
     await new Promise((resolve) => {
-      // Evaluate mainModuleJsCode by passing evalContext to it as 'this'.
-      // Without this trick, tests fail as 'this' is undefined.
-      const evalContext = {};
-
-      // eslint-disable-next-line no-eval,func-names
-      (function () { return eval(mainModuleJsCode); }).call(evalContext);
-      const worker = evalContext.Elm[mainModule];
+      const worker = require(`${mainModuleFilename}.js`).Elm[mainModule];
       const app = needArgs ? worker.init({ flags: argsToOutput }) : worker.init();
       app.ports.sendOutput.subscribe((output) => {
         result.output = output;
@@ -147,11 +141,13 @@ export default async (userModuleFileName, {
       if (err.message.match(/Compilation failed/)) {
         message = err.message
           .replace(/\s*\[[= ]+\] - \d+ \/ \d+\s*/, '\n')
+          .replace(/\s*Compiling ...\s*/, '') // New in Elm 0.19.1
           .replace(/\s*Dependencies loaded from local cache\.\s*/, '')
           .replace(/\s*Dependencies ready!\s*/, '')
           .replace(/\s*Verifying dependencies\.\.\.\s*/, '')
           .replace(/\s*Building dependencies( \(\d+\/\d+\))?\s*/g, '')
-          .replace(/\s*Detected errors in \d+ modules?\.\s*/, '')
+          .replace(/\s*Detected errors in \d+ modules?\.\s*/, '') // Elm 0.19.0
+          .replace(/\s*Detected problems in \d+ modules?\.\s*/, '') // Elm 0.19.1
           .replace(/Compilation failed--/, 'Compilation failed\n--')
           .replace(/\s+$/, '');
       } else if (err.message.indexOf(`does not expose \`${outputName}\``) !== -1) {

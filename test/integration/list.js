@@ -6,8 +6,8 @@ const projectBaseDir = resolve(__dirname, 'case-projects');
 export default () => {
   const result = [];
   const projectDirs = readdirSync(projectBaseDir)
-    .map(filename => resolve(projectBaseDir, filename))
-    .filter(path => statSync(path).isDirectory());
+    .map((filename) => resolve(projectBaseDir, filename))
+    .filter((path) => statSync(path).isDirectory());
 
   projectDirs.forEach((projectDir) => {
     const projectName = basename(projectDir);

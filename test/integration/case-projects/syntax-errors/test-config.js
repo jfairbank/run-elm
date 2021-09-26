@@ -1,18 +1,27 @@
 const path = require('path');
 
 const normalError = `Compilation failed
--- PARSE ERROR ------------------------------------------------------ .${path.sep}Main.elm
+-- EXPECTING DEFINITION ----------------------------------------------- Main.elm
 
-Something went wrong while parsing hello's type annotation.
+I just saw the type annotation for \`hello\` so I was expecting to see its
+definition here:
 
 3| hello: world
 4| I am a broken Elm module
    ^
-I was expecting:
+Type annotations always appear directly above the relevant definition, without
+anything else in between. (Not even doc comments!)
 
-  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`
-  - the rest of hello's type annotation. Maybe you forgot some code? Or you need
-    more indentation?`;
+Here is a valid definition (with a type annotation) for reference:
+
+    greet : String -> String
+    greet name =
+      "Hello " ++ name ++ "!"
+
+The top line (called a "type annotation") is optional. You can leave it off if
+you want. As you get more comfortable with Elm and as your project grows, it
+becomes more and more valuable to add them though! They work great as
+compiler-verified documentation, and they often improve error messages!`;
 
 module.exports = [
   {
@@ -38,6 +47,6 @@ module.exports = [
     expectedExitCode: 1,
     expectedOutput: '',
     expectedError: `Compilation failed
-{"type":"compile-errors","errors":[{"path":".${path.sep === '\\' ? '\\\\' : '/'}Main.elm","name":"Main","problems":[{"title":"PARSE ERROR","region":{"start":{"line":4,"column":1},"end":{"line":4,"column":1}},"message":["Something went wrong while parsing hello's type annotation.\\n\\n3| hello: world\\n4| I am a broken Elm module\\n   ",{"bold":false,"underline":false,"color":"red","string":"^"},"\\nI was expecting:\\n\\n  - a declaration, like \`x = 5\` or \`type alias Model = { ... }\`\\n  - the rest of hello's type annotation. Maybe you forgot some code? Or you need\\n    more indentation?"]}]}]}`
+{"type":"compile-errors","errors":[{"path":"${__dirname}${path.sep === '\\' ? '\\\\' : '/'}Main.elm","name":"Main","problems":[{"title":"EXPECTING DEFINITION","region":{"start":{"line":4,"column":1},"end":{"line":4,"column":1}},"message":["I just saw the type annotation for \`hello\` so I was expecting to see its\\ndefinition here:\\n\\n3| hello: world\\n4| I am a broken Elm module\\n   ",{"bold":false,"underline":false,"color":"RED","string":"^"},"\\nType annotations always appear directly above the relevant definition, without\\nanything else in between. (Not even doc comments!)\\n\\nHere is a valid definition (with a type annotation) for reference:\\n\\n    greet : String -> String\\n    greet name =\\n      ",{"bold":false,"underline":false,"color":"yellow","string":"\\\"Hello \\\""}," ++ name ++ ",{"bold":false,"underline":false,"color":"yellow","string":"\\\"!\\\""},"\\n\\nThe top line (called a \\\"type annotation\\\") is optional. You can leave it off if\\nyou want. As you get more comfortable with Elm and as your project grows, it\\nbecomes more and more valuable to add them though! They work great as\\ncompiler-verified documentation, and they often improve error messages!"]}]}]}`
   }
 ];

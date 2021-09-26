@@ -34,7 +34,7 @@ describe('run-elm cli', () => {
       } catch (e) {
         result = e;
       }
-      expect(result.code || 0).toEqual(expectedExitCode);
+      expect(result.exitCode || 0).toEqual(expectedExitCode);
 
       // when long output is expected, it is cheaper to check its length first
       if (typeof expectedOutput === 'string') {
@@ -52,6 +52,6 @@ describe('run-elm cli', () => {
       } else if (expectedError instanceof RegExp) {
         expect(result.stderr.replace(/\r?\n$/, '')).toMatch(expectedError);
       }
-    }, 30000);
+    }, 60000);
   });
 });
