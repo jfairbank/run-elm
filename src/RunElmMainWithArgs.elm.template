@@ -1,7 +1,6 @@
 port module {mainModule} exposing (..)
 
-import Json.Decode
-import Platform exposing (program)
+import Platform exposing (worker)
 import {userModule} exposing ({output})
 
 
@@ -19,7 +18,7 @@ init args =
 
 main : Program Args () msg
 main =
-    Platform.programWithFlags
+    worker
         { init = init
         , update = \_ model -> ( model, Cmd.none )
         , subscriptions = \_ -> Sub.none

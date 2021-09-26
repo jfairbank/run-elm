@@ -1,85 +1,52 @@
 const path = require('path');
 
-module.exports = [{
-  title: 'report=normal (implicit, cold start)',
-  functionArgs: ['Main.elm'],
-  cliArgs: ['Main.elm'],
-  cleanElmStuff: true,
-  expectedStdout: '',
-  expectedExitCode: 1,
-  // do not check stderr as it is unstable (order of downloads changes)
-  // approximate stdout:
+const normalError = `Compilation failed
+-- EXPECTING DEFINITION ----------------------------------------------- Main.elm
 
-/*
+I just saw the type annotation for \`hello\` so I was expecting to see its
+definition here:
 
-Error: Compilation failed
-Starting downloads...
-
-  ● elm-lang/html 2.0.0
-  ● elm-lang/virtual-dom 2.0.4
-
-● elm-lang/core 5.1.1
-Packages configured successfully!
--- SYNTAX PROBLEM ------------------------------------------------- ././Main.elm
-
-It looks like the keyword \`module\` is being used as a variable.
-
+3| hello: world
 4| I am a broken Elm module
-                           ^
-Rename it to something else.
+   ^
+Type annotations always appear directly above the relevant definition, without
+anything else in between. (Not even doc comments!)
 
-Detected errors in 1 module.
+Here is a valid definition (with a type annotation) for reference:
 
-*/
+    greet : String -> String
+    greet name =
+      "Hello " ++ name ++ "!"
 
-}, {
-  title: 'report=normal (implicit)',
-  functionArgs: ['Main.elm'],
-  cliArgs: ['Main.elm'],
-  expectedExitCode: 1,
-  expectedStdout: '',
-  expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
+The top line (called a "type annotation") is optional. You can leave it off if
+you want. As you get more comfortable with Elm and as your project grows, it
+becomes more and more valuable to add them though! They work great as
+compiler-verified documentation, and they often improve error messages!`;
 
-It looks like the keyword \`module\` is being used as a variable.
-
-4| I am a broken Elm module
-                           ^
-Rename it to something else.
-
-Detected errors in 1 module.
-
-`,
-}, {
-  title: 'report=normal (explicit)',
-  functionArgs: ['Main.elm', { report: 'normal' }],
-  cliArgs: ['Main.elm', '--report=normal'],
-  expectedExitCode: 1,
-  expectedStdout: '',
-  expectedStderr: `Error: Compilation failed
--- SYNTAX PROBLEM ------------------------------------------------- .${path.sep}.${path.sep}Main.elm
-
-It looks like the keyword \`module\` is being used as a variable.
-
-4| I am a broken Elm module
-                           ^
-Rename it to something else.
-
-Detected errors in 1 module.
-
-`,
-}, {
-  title: 'report=json',
-  functionArgs: ['Main.elm', { report: 'json' }],
-  cliArgs: ['Main.elm', '--report=json'],
-  expectedExitCode: 1,
-  expectedStdout: '',
-  expectedStderr: process.platform === 'win32'
-    ? `Error: Compilation failed
-[{"subregion":null,"details":"Rename it to something else.","region":{"end":{"column":25,"line":4},"start":{"column":25,"line":4}},"type":"error","file":".\\\\.\\\\Main.elm","tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable."}]
-
-` : `Error: Compilation failed
-[{"tag":"SYNTAX PROBLEM","overview":"It looks like the keyword \`module\` is being used as a variable.","subregion":null,"details":"Rename it to something else.","region":{"start":{"line":4,"column":25},"end":{"line":4,"column":25}},"type":"error","file":"././Main.elm"}]
-
-`,
-}];
+module.exports = [
+  {
+    title: 'report=normal (implicit)',
+    functionArgs: ['Main.elm'],
+    cliArgs: ['Main.elm'],
+    expectedExitCode: 1,
+    expectedOutput: '',
+    expectedError: normalError
+  },
+  {
+    title: 'report=normal (explicit)',
+    functionArgs: ['Main.elm', { report: 'normal' }],
+    cliArgs: ['Main.elm', '--report=normal'],
+    expectedExitCode: 1,
+    expectedOutput: '',
+    expectedError: normalError
+  },
+  {
+    title: 'report=json',
+    functionArgs: ['Main.elm', { report: 'json' }],
+    cliArgs: ['Main.elm', '--report=json'],
+    expectedExitCode: 1,
+    expectedOutput: '',
+    expectedError: `Compilation failed
+{"type":"compile-errors","errors":[{"path":"${__dirname}${path.sep === '\\' ? '\\\\' : '/'}Main.elm","name":"Main","problems":[{"title":"EXPECTING DEFINITION","region":{"start":{"line":4,"column":1},"end":{"line":4,"column":1}},"message":["I just saw the type annotation for \`hello\` so I was expecting to see its\\ndefinition here:\\n\\n3| hello: world\\n4| I am a broken Elm module\\n   ",{"bold":false,"underline":false,"color":"RED","string":"^"},"\\nType annotations always appear directly above the relevant definition, without\\nanything else in between. (Not even doc comments!)\\n\\nHere is a valid definition (with a type annotation) for reference:\\n\\n    greet : String -> String\\n    greet name =\\n      ",{"bold":false,"underline":false,"color":"yellow","string":"\\\"Hello \\\""}," ++ name ++ ",{"bold":false,"underline":false,"color":"yellow","string":"\\\"!\\\""},"\\n\\nThe top line (called a \\\"type annotation\\\") is optional. You can leave it off if\\nyou want. As you get more comfortable with Elm and as your project grows, it\\nbecomes more and more valuable to add them though! They work great as\\ncompiler-verified documentation, and they often improve error messages!"]}]}]}`
+  }
+];

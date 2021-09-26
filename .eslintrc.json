@@ -6,6 +6,7 @@
   "plugins": [
     "import"
   ],
+  "ignorePatterns": ["**/test/integration/case-projects/**/*.*", "test/js.js"],
   "rules": {
     "comma-dangle": 0,
     "global-require": 0,

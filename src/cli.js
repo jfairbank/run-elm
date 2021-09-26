@@ -40,11 +40,12 @@ import defaultOptions from './defaultOptions';
   }
 
   try {
+    const options = program.opts();
     const { debugLog, output } = await runElm(program.args[0], {
-      outputName: program.outputName,
-      projectDir: program.projectDir,
-      report: program.report,
-      pathToElmMake: program.pathToElmMake,
+      outputName: options.outputName,
+      projectDir: options.projectDir,
+      report: options.report,
+      pathToElmMake: options.pathToElmMake,
       argsToOutput: program.args.slice(1),
     });
     if (debugLog.length) {
@@ -52,7 +53,7 @@ import defaultOptions from './defaultOptions';
     }
     console.log(output);
   } catch (e) {
-    console.error('Error:', e.message);
+    console.error(e.message);
     if (e.stack && process.env.DEBUG) {
       console.error(e.stack.substring(e.toString().length + 1));
     }
